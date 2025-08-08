@@ -39,3 +39,10 @@ spring:
 #    properties:
 #      hibernate:
 #        format_sql: true
+
+jwt:
+  issuer: ${JWT_ISSUER}
+  secret_key: ${JWT_SECRET_KEY}
+  expiration: ${JWT_EXPIRATION}
+  header-string: Authorization
+  token-prefix: "Bearer "
