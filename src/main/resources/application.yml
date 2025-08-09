@@ -46,3 +46,8 @@ jwt:
   expiration: ${JWT_EXPIRATION}
   header-string: Authorization
   token-prefix: "Bearer "
+
+external:
+  camp:
+    base-url: ${BASE_URL}
+    api-key: ${CAMP_KEY}
