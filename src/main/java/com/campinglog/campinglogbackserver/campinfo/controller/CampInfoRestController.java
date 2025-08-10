@@ -1,10 +1,14 @@
 package com.campinglog.campinglogbackserver.campinfo.controller;
 
+import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestAddReview;
+import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestGetBoardReview;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
 import com.campinglog.campinglogbackserver.campinfo.service.CampInfoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -37,6 +41,17 @@ public class CampInfoRestController {
     @GetMapping("/camp/keyword/{keyword}/{pageNo}")
     public ResponseEntity<Mono<List<ResponseGetCampByKeyword>>> getCampByKeyword(@PathVariable String keyword, @PathVariable int pageNo) {
         return ResponseEntity.ok(campInfoService.getCampByKeyword(keyword, pageNo));
+    }
+
+    @GetMapping("/board-info/{mapX}/{mapY}")
+    public ResponseEntity<ResponseGetBoardReview> getBoardReview(@PathVariable String mapX, @PathVariable String mapY) {
+        return ResponseEntity.ok(campInfoService.getBoardReview(mapX, mapY));
+    }
+
+    @PostMapping("/review")
+    public ResponseEntity<Map<String, String>> addReview(@RequestBody RequestAddReview requestAddReview) {
+        campInfoService.addReview(requestAddReview);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
 

@@ -22,9 +22,6 @@ public class BoardInfo {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long Id;
 
-  @Column(name = "board_name", nullable = false)
-  private  String boardName;
-
   @Column(name = "review_count", nullable = false)
   private String reviewCount;
 
