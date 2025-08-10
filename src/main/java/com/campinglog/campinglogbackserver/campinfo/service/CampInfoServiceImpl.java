@@ -1,6 +1,7 @@
 package com.campinglog.campinglogbackserver.campinfo.service;
 
 import com.campinglog.campinglogbackserver.campinfo.dto.api.CampApi;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +28,30 @@ public class CampInfoServiceImpl implements CampInfoService{
     private final ObjectMapper objectMapper;
 
     @Override
+    public Mono<ResponseGetCampDetail> getCampDetail(String mapX, String mapY) {
+        return campWebClient.get()
+            .uri(uri -> uri.path("/locationBasedList")
+                .queryParam("serviceKey", serviceKey)
+                .queryParam("MobileOS", "ETC")
+                .queryParam("MobileApp", "CampingLog")
+                .queryParam("_type", "json")
+                .queryParam("pageNo", 1)
+                .queryParam("numOfRows", 4)
+                .queryParam("mapX", mapX)
+                .queryParam("mapY", mapY)
+                .queryParam("radius", 100)
+                .build())
+            .retrieve()
+            .bodyToMono(String.class)
+            .timeout(Duration.ofSeconds(6))
+            .map(json -> {
+                List<ResponseGetCampDetail> list = parseItems(json, ResponseGetCampDetail.class);
+                if(list.isEmpty()) return null;
+                return list.get(0);
+            });
+    } //eternalApiException
+
+    @Override
     public Mono<List<ResponseGetCampListLatest>> getCampListLatest(int pageNo) {
         return campWebClient.get()
             .uri(uri -> uri.path("/basedList")
@@ -46,29 +71,28 @@ public class CampInfoServiceImpl implements CampInfoService{
 //                                .flatMap(b -> Mono.error(new ExternalApiException("500: " + b))))
             .bodyToMono(String.class)
             .timeout(Duration.ofSeconds(6))
-            .map(this::parseCampList);
+            .map(json -> parseItems(json, ResponseGetCampListLatest.class));
     }
 
 
     //try catch -> advice
-    private List<ResponseGetCampListLatest> parseCampList(String json) {
+    private <T> List<T> parseItems(String json, Class<T> type) {
         try {
             JsonNode root = objectMapper.readTree(json);
             JsonNode items = root.path("response").path("body").path("items").path("item");
 
-            List<ResponseGetCampListLatest> result = new ArrayList<>();
+            List<T> result = new ArrayList<>();
             if (items.isArray()) {
                 for (JsonNode item : items) {
-                    result.add(parseDto(item));
+                    result.add(objectMapper.treeToValue(item, type));
                 }
             } else if (items.isObject()) {
-                result.add(parseDto(items));
+                result.add(objectMapper.treeToValue(items, type));
             }
             return result;
         } catch (Exception e) {
-            e.getMessage();
+            throw new RuntimeException("GoCamping JSON 파싱 실패", e);
         }
-        return null;
     }
 
     private ResponseGetCampListLatest parseDto(JsonNode item) {

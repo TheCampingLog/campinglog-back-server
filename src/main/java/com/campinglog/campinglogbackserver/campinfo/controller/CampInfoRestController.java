@@ -1,5 +1,6 @@
 package com.campinglog.campinglogbackserver.campinfo.controller;
 
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
 import com.campinglog.campinglogbackserver.campinfo.service.CampInfoService;
 import lombok.RequiredArgsConstructor;
@@ -26,5 +27,11 @@ public class CampInfoRestController {
 
         return ResponseEntity.ok(campInfoService.getCampListLatest(pageNo));
     }
+
+    @GetMapping("/camp/{mapX}/{mapY}")
+    public ResponseEntity<Mono<ResponseGetCampDetail>> getCampDetail(@PathVariable String mapX, @PathVariable String mapY) {
+        return ResponseEntity.ok(campInfoService.getCampDetail(mapX, mapY));
+    }
+
 
 }
