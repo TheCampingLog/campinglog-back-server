@@ -2,6 +2,7 @@ package com.campinglog.campinglogbackserver.campinfo.service;
 
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestAddReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestGetBoardReview;
+import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestSetReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
@@ -11,6 +12,8 @@ import com.campinglog.campinglogbackserver.campinfo.entity.Review;
 import com.campinglog.campinglogbackserver.campinfo.repository.ReviewRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -46,6 +49,32 @@ public class CampInfoServiceImpl implements CampInfoService{
             .reviewScore(requestAddReview.getReviewScore())
             .build();
         reviewRepository.save(review);
+    }
+
+    @Override
+    public void setReview(RequestSetReview requestSetReview) {
+        Optional<Review> optionalReview = reviewRepository.findById(Review.builder().Id(requestSetReview.getId()).build().getId());
+
+        boolean update = false;
+
+        if(optionalReview.isPresent()) {
+            Review review = optionalReview.get();
+
+            if(!review.getReviewContent().equals(requestSetReview.getNewReviewContent())) {
+                review.setReviewContent(requestSetReview.getNewReviewContent());
+                update = true;
+            }
+
+            if(!review.getReviewScore().equals(requestSetReview.getNewReviewScore())) {
+                review.setReviewScore(requestSetReview.getNewReviewScore());
+                update = true;
+            }
+
+            if(update) {
+                reviewRepository.save(review);
+            }
+        }
+
     }
 
     @Override
