@@ -1,35 +1,52 @@
 package com.campinglog.campinglogbackserver.campinfo.service;
 
-import com.campinglog.campinglogbackserver.campinfo.dto.api.CampApi;
+import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestAddReview;
+import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestGetBoardReview;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
+import com.campinglog.campinglogbackserver.campinfo.entity.BoardInfo;
+import com.campinglog.campinglogbackserver.campinfo.entity.Review;
+import com.campinglog.campinglogbackserver.campinfo.repository.ReviewRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class CampInfoServiceImpl implements CampInfoService{
 
+    private final ReviewRepository reviewRepository;
     private final WebClient campWebClient;
-
-
-
     @Value("${external.camp.api-key}")
     private String serviceKey;
     private final ObjectMapper objectMapper;
+
+    @Override
+    public ResponseGetBoardReview getBoardReview(String mapX, String mapY) {
+        return null;
+    }
+
+    @Override
+    public void addReview(RequestAddReview requestAddReview) {
+        Review review = Review.builder()
+            .email(requestAddReview.getEmail())
+            .mapX(requestAddReview.getMapX())
+            .mapY(requestAddReview.getMapY())
+            .reviewContent(requestAddReview.getReviewContent())
+            .reviewScore(requestAddReview.getReviewScore())
+            .build();
+        reviewRepository.save(review);
+    }
 
     @Override
     public Mono<ResponseGetCampDetail> getCampDetail(String mapX, String mapY) {
