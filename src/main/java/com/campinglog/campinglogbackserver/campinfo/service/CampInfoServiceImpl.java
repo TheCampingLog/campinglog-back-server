@@ -1,6 +1,7 @@
 package com.campinglog.campinglogbackserver.campinfo.service;
 
 import com.campinglog.campinglogbackserver.campinfo.dto.api.CampApi;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -23,6 +24,9 @@ import java.util.Optional;
 public class CampInfoServiceImpl implements CampInfoService{
 
     private final WebClient campWebClient;
+
+
+
     @Value("${external.camp.api-key}")
     private String serviceKey;
     private final ObjectMapper objectMapper;
@@ -74,6 +78,35 @@ public class CampInfoServiceImpl implements CampInfoService{
             .map(json -> parseItems(json, ResponseGetCampListLatest.class));
     }
 
+    @Override
+    public Mono<List<ResponseGetCampByKeyword>> getCampByKeyword(String keyword, int pageNo) {
+        return campWebClient.get()
+            .uri(uri -> uri.path("/searchList")
+                .queryParam("serviceKey", serviceKey)
+                .queryParam("MobileOS", "ETC")
+                .queryParam("MobileApp", "CampingLog")
+                .queryParam("_type", "json")
+                .queryParam("pageNo", pageNo)
+                .queryParam("numOfRows", 4)
+                .queryParam("keyword", keyword)
+                .build())
+            .retrieve()
+//                .onStatus(HttpStatusCode::is4xxClientError, r ->
+//                        r.bodyToMono(String.class)
+//                                .flatMap(b -> Mono.error(new ExternalApiException("400: "+b))))
+//                .onStatus(HttpStatusCode::is5xxServerError, r ->
+//                        r.bodyToMono(String.class)
+//                                .flatMap(b -> Mono.error(new ExternalApiException("500: " + b))))
+            .bodyToMono(String.class)
+            .timeout(Duration.ofSeconds(6))
+            .map(json -> {
+                int total = parseTotalCount(json);
+                List<ResponseGetCampByKeyword> list = parseItems(json, ResponseGetCampByKeyword.class);
+                list.forEach(item -> item.setTotalCount(total));
+                return list;
+            });
+    }
+
 
     //try catch -> advice
     private <T> List<T> parseItems(String json, Class<T> type) {
@@ -95,19 +128,28 @@ public class CampInfoServiceImpl implements CampInfoService{
         }
     }
 
-    private ResponseGetCampListLatest parseDto(JsonNode item) {
-        ResponseGetCampListLatest dto = ResponseGetCampListLatest.builder()
-            .facltNm(item.path("facltNm").asText(null))
-            .doNm(item.path("doNm").asText(null))
-            .sigunguNm(item.path("sigunguNm").asText(null))
-            .addr1(item.path("addr1").asText(null))
-            .addr2(item.path("addr2").asText(null))
-            .tel(item.path("tel").asText(null))
-            .sbrsCl(item.path("sbrsCl").asText(null))
-            .firstImageUrl(item.path("firstImageUrl").asText(null))
-            .mapX(item.path("mapX").asText(null))
-            .mapY(item.path("mapY").asText(null))
-            .build();
-        return dto;
+    private int parseTotalCount(String json) {
+        try{
+            JsonNode root = objectMapper.readTree(json);
+            return root.path("response").path("body").path("totalCount").asInt(0);
+        } catch (Exception e) {
+            throw new RuntimeException("GoCamping totalCount 파싱 실패", e);
+        }
     }
+//
+//    private ResponseGetCampListLatest parseDto(JsonNode item) {
+//        ResponseGetCampListLatest dto = ResponseGetCampListLatest.builder()
+//            .facltNm(item.path("facltNm").asText(null))
+//            .doNm(item.path("doNm").asText(null))
+//            .sigunguNm(item.path("sigunguNm").asText(null))
+//            .addr1(item.path("addr1").asText(null))
+//            .addr2(item.path("addr2").asText(null))
+//            .tel(item.path("tel").asText(null))
+//            .sbrsCl(item.path("sbrsCl").asText(null))
+//            .firstImageUrl(item.path("firstImageUrl").asText(null))
+//            .mapX(item.path("mapX").asText(null))
+//            .mapY(item.path("mapY").asText(null))
+//            .build();
+//        return dto;
+//    }
 }
