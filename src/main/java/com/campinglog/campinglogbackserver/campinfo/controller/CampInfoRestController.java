@@ -1,5 +1,6 @@
 package com.campinglog.campinglogbackserver.campinfo.controller;
 
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
 import com.campinglog.campinglogbackserver.campinfo.service.CampInfoService;
@@ -31,6 +32,11 @@ public class CampInfoRestController {
     @GetMapping("/camp/{mapX}/{mapY}")
     public ResponseEntity<Mono<ResponseGetCampDetail>> getCampDetail(@PathVariable String mapX, @PathVariable String mapY) {
         return ResponseEntity.ok(campInfoService.getCampDetail(mapX, mapY));
+    }
+
+    @GetMapping("/camp/keyword/{keyword}/{pageNo}")
+    public ResponseEntity<Mono<List<ResponseGetCampByKeyword>>> getCampByKeyword(@PathVariable String keyword, @PathVariable int pageNo) {
+        return ResponseEntity.ok(campInfoService.getCampByKeyword(keyword, pageNo));
     }
 
 

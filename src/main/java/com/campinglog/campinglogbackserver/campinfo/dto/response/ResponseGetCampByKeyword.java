@@ -1,0 +1,21 @@
+package com.campinglog.campinglogbackserver.campinfo.dto.response;
+
+import lombok.Builder;
+import lombok.Data;
+
+
+@Builder
+@Data
+public class ResponseGetCampByKeyword {
+  private String facltNm;
+  private String doNm;
+  private String sigunguNm;
+  private String addr1;
+  private String addr2;
+  private String mapX;
+  private String mapY;
+  private String tel;
+  private String sbrsCl;
+  private String firstImageUrl;
+  private int totalCount;
+}
