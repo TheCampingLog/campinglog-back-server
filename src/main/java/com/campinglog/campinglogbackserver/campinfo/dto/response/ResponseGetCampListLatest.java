@@ -19,4 +19,5 @@ public class ResponseGetCampListLatest {
     private String tel;
     private String sbrsCl;
     private String firstImageUrl;
+    private int totalCount;
 }

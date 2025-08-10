@@ -2,6 +2,7 @@ package com.campinglog.campinglogbackserver.campinfo.controller;
 
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestAddReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestGetBoardReview;
+import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestRemoveReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestSetReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
@@ -58,6 +59,12 @@ public class CampInfoRestController {
     @PutMapping("/review")
     public ResponseEntity<Map<String, String>> setReview(@RequestBody RequestSetReview requestSetReview) {
         campInfoService.setReview(requestSetReview);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @DeleteMapping("/review")
+    public  ResponseEntity<Map<String, String>> removeReview(@RequestBody RequestRemoveReview requestRemoveReview) {
+        campInfoService.removeReview(requestRemoveReview);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
