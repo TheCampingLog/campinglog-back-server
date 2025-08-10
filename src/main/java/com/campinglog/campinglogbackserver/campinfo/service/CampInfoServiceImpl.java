@@ -2,6 +2,7 @@ package com.campinglog.campinglogbackserver.campinfo.service;
 
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestAddReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestGetBoardReview;
+import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestRemoveReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestSetReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
@@ -78,6 +79,16 @@ public class CampInfoServiceImpl implements CampInfoService{
     }
 
     @Override
+    public void removeReview(RequestRemoveReview requestRemoveReview) {
+        reviewRepository.deleteById(Review
+            .builder()
+            .Id(requestRemoveReview.getId())
+            .build()
+            .getId());
+
+    }
+
+    @Override
     public Mono<ResponseGetCampDetail> getCampDetail(String mapX, String mapY) {
         return campWebClient.get()
             .uri(uri -> uri.path("/locationBasedList")
@@ -121,7 +132,12 @@ public class CampInfoServiceImpl implements CampInfoService{
 //                                .flatMap(b -> Mono.error(new ExternalApiException("500: " + b))))
             .bodyToMono(String.class)
             .timeout(Duration.ofSeconds(6))
-            .map(json -> parseItems(json, ResponseGetCampListLatest.class));
+            .map(json -> {
+                int total = parseTotalCount(json);
+                List<ResponseGetCampListLatest> list = parseItems(json, ResponseGetCampListLatest.class);
+                list.forEach(item -> item.setTotalCount(total));
+                return list;
+            });
     }
 
     @Override
@@ -174,6 +190,7 @@ public class CampInfoServiceImpl implements CampInfoService{
         }
     }
 
+    //try catch -> advice
     private int parseTotalCount(String json) {
         try{
             JsonNode root = objectMapper.readTree(json);
@@ -182,20 +199,4 @@ public class CampInfoServiceImpl implements CampInfoService{
             throw new RuntimeException("GoCamping totalCount 파싱 실패", e);
         }
     }
-//
-//    private ResponseGetCampListLatest parseDto(JsonNode item) {
-//        ResponseGetCampListLatest dto = ResponseGetCampListLatest.builder()
-//            .facltNm(item.path("facltNm").asText(null))
-//            .doNm(item.path("doNm").asText(null))
-//            .sigunguNm(item.path("sigunguNm").asText(null))
-//            .addr1(item.path("addr1").asText(null))
-//            .addr2(item.path("addr2").asText(null))
-//            .tel(item.path("tel").asText(null))
-//            .sbrsCl(item.path("sbrsCl").asText(null))
-//            .firstImageUrl(item.path("firstImageUrl").asText(null))
-//            .mapX(item.path("mapX").asText(null))
-//            .mapY(item.path("mapY").asText(null))
-//            .build();
-//        return dto;
-//    }
 }
