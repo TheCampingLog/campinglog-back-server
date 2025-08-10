@@ -45,13 +45,13 @@ public class SecurityConfig {
     http.headers(headers -> headers
         .frameOptions(frame -> frame.disable())); // H2 콘솔용 설정
     http.addFilter(corsFilter);
-    http.addFilter(
-        new JwtAuthenticationFilter(authenticationManager, jwtTokenProvider, jwtProperties));
-    http.addFilter(new JwtBasicAuthenticationFilter(authenticationManager, jwtProperties));
-    http.authorizeHttpRequests(auth ->
-        auth.requestMatchers("/h2-console/**", "/api/account", "/login").permitAll() // H2 콘솔 허용
-            .requestMatchers("/api/account/test").hasAnyRole("ADMIN", "USER")
-            .anyRequest().hasAnyRole("ADMIN", "USER"));
+//    http.addFilter(
+//        new JwtAuthenticationFilter(authenticationManager, jwtTokenProvider, jwtProperties));
+//    http.addFilter(new JwtBasicAuthenticationFilter(authenticationManager, jwtProperties));
+//    http.authorizeHttpRequests(auth ->
+//        auth.requestMatchers("/h2-console/**", "/api/account", "/login").permitAll() // H2 콘솔 허용
+//            .requestMatchers("/api/account/test").hasAnyRole("ADMIN", "USER")
+//            .anyRequest().hasAnyRole("ADMIN", "USER"));
 
     return http.build();
   }
