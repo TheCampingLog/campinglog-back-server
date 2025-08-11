@@ -2,17 +2,21 @@ package com.campinglog.campinglogbackserver.board.controller;
 
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
-import com.campinglog.campinglogbackserver.board.dto.response.ResMessage;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseMessage;
 import com.campinglog.campinglogbackserver.board.service.BoardService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -24,22 +28,29 @@ public class BoardRestController {
 
 
     @PostMapping("/boards")
-    public ResponseEntity<ResMessage> addBoard(@RequestBody RequestAddBoard requestAddBoard) {
+    public ResponseEntity<ResponseMessage> addBoard(@RequestBody RequestAddBoard requestAddBoard) {
         boardService.addBoard(requestAddBoard);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PutMapping("/boards/{boardId}")
-    public ResponseEntity<ResMessage> setBoard(@PathVariable String boardId,
+    public ResponseEntity<ResponseMessage> setBoard(@PathVariable String boardId,
         @RequestBody RequestSetBoard requestsetBoard) {
         requestsetBoard.setBoardId(boardId);
         boardService.setBoard(requestsetBoard);
-        return ResponseEntity.ok(new ResMessage("success"));
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping("/boards/{boardId}")
-    public ResponseEntity<ResMessage> deleteBoard(@PathVariable String boardId) {
+    public ResponseEntity<ResponseMessage> deleteBoard(@PathVariable String boardId) {
         boardService.deleteBoard(boardId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/boards/rank")
+    public ResponseEntity<List<ResponseGetBoardRank>> getBoardRank(
+        @RequestParam(value = "limit", defaultValue = "3") int limit) {
+        List<ResponseGetBoardRank> result = boardService.getBoardRank(limit);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 }

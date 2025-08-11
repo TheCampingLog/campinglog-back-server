@@ -2,12 +2,18 @@ package com.campinglog.campinglogbackserver.board.service;
 
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
 import com.campinglog.campinglogbackserver.board.entity.Board;
 import com.campinglog.campinglogbackserver.board.repository.BoardRepository;
 import jakarta.persistence.EntityNotFoundException;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -62,4 +68,19 @@ public class BoardServiceImpl implements BoardService {
         boardRepository.delete(board);
     }
 
+    @Override
+    public List<ResponseGetBoardRank> getBoardRank(int limit) {
+        LocalDateTime weekAgo = LocalDateTime.now().minusWeeks(1);
+        java.util.Date from = java.util.Date.from(
+            weekAgo.atZone(java.time.ZoneId.systemDefault()).toInstant());
+        Pageable pageable = PageRequest.of(0, limit);
+
+        List<Board> boards = boardRepository.findByCreatedAtAfterOrderByLikeCountDescViewCountDescCreatedAtDesc(
+            from, pageable);
+
+        List<ResponseGetBoardRank> responses = modelMapper.map(boards,
+            new TypeToken<List<ResponseGetBoardRank>>() {
+            }.getType());
+        return responses;
+    }
 }

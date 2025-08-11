@@ -43,6 +43,9 @@ public class Board {
     @Column(name = "like_count")
     private int likeCount;
 
+    @Column(name = "rank")
+    private int rank;
+
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     @ColumnDefault(value = "CURRENT_TIMESTAMP")
     private Date createdAt;
@@ -52,6 +55,9 @@ public class Board {
 
     @Column(name = "board_id", nullable = false, unique = true)
     private String boardId;
+
+    @Column(name = "nickname")
+    private String nickname;
 
 
 }
