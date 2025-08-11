@@ -2,6 +2,7 @@ package com.campinglog.campinglogbackserver.board.controller;
 
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategory;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
 import com.campinglog.campinglogbackserver.board.service.BoardService;
@@ -61,6 +62,12 @@ public class BoardRestController {
         @RequestParam String keyword, @RequestParam(required = false, defaultValue = "1") int page,
         @RequestParam(required = false, defaultValue = "3") int size) {
         List<ResponseGetBoardByKeyword> result = boardService.searchBoards(keyword, page, size);
+        return ResponseEntity.ok(result);
+    }
+    @GetMapping("/boards/category")
+    public ResponseEntity<List<ResponseGetBoardByCategory>> getBoardsByCategory(@RequestParam String category, @RequestParam(required = false, defaultValue = "1")int page,
+        @RequestParam(required = false, defaultValue = "3")int size){
+        List<ResponseGetBoardByCategory> result =boardService.getBoardsByCategory(category, page, size);
         return ResponseEntity.ok(result);
     }
 
