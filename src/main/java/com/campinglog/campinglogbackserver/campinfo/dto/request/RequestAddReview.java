@@ -12,6 +12,6 @@ public class RequestAddReview {
   private String email;
 
   private String reviewContent;
-  private String reviewScore;
+  private Double reviewScore;
   private String reviewImage;
 }

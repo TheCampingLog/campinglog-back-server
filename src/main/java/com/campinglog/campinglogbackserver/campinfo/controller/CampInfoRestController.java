@@ -46,11 +46,6 @@ public class CampInfoRestController {
         return ResponseEntity.ok(campInfoService.getCampByKeyword(keyword, pageNo));
     }
 
-    @GetMapping("/board-info/{mapX}/{mapY}")
-    public ResponseEntity<ResponseGetBoardReview> getBoardReview(@PathVariable String mapX, @PathVariable String mapY) {
-        return ResponseEntity.ok(campInfoService.getBoardReview(mapX, mapY));
-    }
-
     @PostMapping("/review")
     public ResponseEntity<Map<String, String>> addReview(@RequestBody RequestAddReview requestAddReview) {
         campInfoService.addReview(requestAddReview);
@@ -72,5 +67,10 @@ public class CampInfoRestController {
     @GetMapping("/review/{mapX}/{mapY}")
     public ResponseEntity<List<ResponseGetReviewList>> getReviewList(@PathVariable String mapX, @PathVariable String mapY) {
         return ResponseEntity.ok(campInfoService.getReviewList(mapX, mapY));
+    }
+
+    @GetMapping("/review/board/{mapX}/{mapY}")
+    public ResponseEntity<ResponseGetBoardReview> getBoardReview(@PathVariable String mapX, @PathVariable String mapY) {
+        return ResponseEntity.ok(campInfoService.getBoardReview(mapX, mapY));
     }
 }

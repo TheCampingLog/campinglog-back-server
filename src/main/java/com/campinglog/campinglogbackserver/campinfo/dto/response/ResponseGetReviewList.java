@@ -1,5 +1,6 @@
 package com.campinglog.campinglogbackserver.campinfo.dto.response;
 
+import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,7 +12,10 @@ public class ResponseGetReviewList {
   private String nickname;
 
   private String reviewContent;
-  private String reviewScore;
+  private double reviewScore;
   private String reviewImage;
+
+  private LocalDateTime postAt;
+  private LocalDateTime setAt;
 
 }

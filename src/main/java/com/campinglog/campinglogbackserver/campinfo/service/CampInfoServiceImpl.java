@@ -1,7 +1,6 @@
 package com.campinglog.campinglogbackserver.campinfo.service;
 
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestAddReview;
-import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestGetBoardReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestRemoveReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestSetReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReview;
@@ -9,12 +8,12 @@ import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCamp
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewList;
-import com.campinglog.campinglogbackserver.campinfo.entity.BoardInfo;
+import com.campinglog.campinglogbackserver.campinfo.entity.ReviewOfBoard;
 import com.campinglog.campinglogbackserver.campinfo.entity.Review;
+import com.campinglog.campinglogbackserver.campinfo.repository.ReviewOfBoardRepository;
 import com.campinglog.campinglogbackserver.campinfo.repository.ReviewRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CampInfoServiceImpl implements CampInfoService{
 
+    private final ReviewOfBoardRepository reviewOfBoardRepository;
     private final ReviewRepository reviewRepository;
     private final WebClient campWebClient;
     @Value("${external.camp.api-key}")
@@ -38,7 +38,11 @@ public class CampInfoServiceImpl implements CampInfoService{
 
     @Override
     public ResponseGetBoardReview getBoardReview(String mapX, String mapY) {
-        return null;
+        ReviewOfBoard reviewOfBoard = reviewOfBoardRepository.findByMapXAndMapY(mapX, mapY);
+        return ResponseGetBoardReview.builder()
+            .reviewAverage(reviewOfBoard.getReviewAverage())
+            .reviewCount(reviewOfBoard.getReviewCount())
+            .build();
     }
 
     @Override
@@ -51,6 +55,24 @@ public class CampInfoServiceImpl implements CampInfoService{
             .reviewScore(requestAddReview.getReviewScore())
             .build();
         reviewRepository.save(review);
+
+        if(reviewOfBoardRepository.existsByMapXAndMapY(review.getMapX(), review.getMapY())) {
+            ReviewOfBoard reviewOfBoard = reviewOfBoardRepository.findByMapXAndMapY(review.getMapX(), review.getMapY());
+            int reviewCount = reviewOfBoard.getReviewCount();
+            reviewOfBoard.setReviewCount(reviewCount + 1);
+            reviewOfBoard.setReviewAverage(
+                ((reviewOfBoard.getReviewAverage() * reviewCount) + review.getReviewScore())
+                    / reviewOfBoard.getReviewCount());
+            reviewOfBoardRepository.save(reviewOfBoard);
+        } else {
+            ReviewOfBoard reviewOfBoard = ReviewOfBoard.builder()
+                .reviewCount(1)
+                .reviewAverage(requestAddReview.getReviewScore())
+                .mapX(requestAddReview.getMapX())
+                .mapY(requestAddReview.getMapY())
+                .build();
+            reviewOfBoardRepository.save(reviewOfBoard);
+        }
     }
 
     @Override
@@ -68,8 +90,14 @@ public class CampInfoServiceImpl implements CampInfoService{
             }
 
             if(!review.getReviewScore().equals(requestSetReview.getNewReviewScore())) {
+                double oldScore = review.getReviewScore();
                 review.setReviewScore(requestSetReview.getNewReviewScore());
                 update = true;
+
+                ReviewOfBoard reviewOfBoard = reviewOfBoardRepository.findByMapXAndMapY(review.getMapX(), review.getMapY());
+                reviewOfBoard.setReviewAverage(((reviewOfBoard.getReviewAverage()*reviewOfBoard.getReviewCount()) + (requestSetReview.getNewReviewScore()-oldScore))
+                    / reviewOfBoard.getReviewCount());
+                reviewOfBoardRepository.save(reviewOfBoard);
             }
 
             if(update) {
@@ -81,12 +109,14 @@ public class CampInfoServiceImpl implements CampInfoService{
 
     @Override
     public void removeReview(RequestRemoveReview requestRemoveReview) {
-        reviewRepository.deleteById(Review
-            .builder()
-            .Id(requestRemoveReview.getId())
-            .build()
-            .getId());
+        Review review = Review.builder().Id(requestRemoveReview.getId()).build();
+        Optional<Review> deleteReview = reviewRepository.findById(review.getId());
+        reviewRepository.deleteById(review.getId());
 
+        ReviewOfBoard reviewOfBoard = reviewOfBoardRepository.findByMapXAndMapY(deleteReview.get().getMapX(), deleteReview.get().getMapY());
+        reviewOfBoard.setReviewAverage((reviewOfBoard.getReviewAverage()*reviewOfBoard.getReviewCount()-deleteReview.get().getReviewScore()) / (reviewOfBoard.getReviewCount()-1));
+        reviewOfBoard.setReviewCount(reviewOfBoard.getReviewCount()-1);
+        reviewOfBoardRepository.save(reviewOfBoard);
     }
 
     @Override
@@ -99,6 +129,8 @@ public class CampInfoServiceImpl implements CampInfoService{
                 .reviewContent(review.getReviewContent())
                 .reviewScore(review.getReviewScore())
                 .email(review.getEmail())
+                .postAt(review.getPostAt())
+                .setAt(review.getSetAt())
                 .build();
             list.add(reviewUnit);
         }

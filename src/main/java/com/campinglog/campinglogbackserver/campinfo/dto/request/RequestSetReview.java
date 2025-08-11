@@ -7,12 +7,12 @@ import lombok.Data;
 @Builder
 public class RequestSetReview {
   private Long id;
-//  private String mapX;
-//  private String mapY;
+  private String mapX;
+  private String mapY;
 //
 //  private String email;
 
   private String newReviewContent;
-  private String newReviewScore;
+  private double newReviewScore;
 
 }

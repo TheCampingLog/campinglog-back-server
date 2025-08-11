@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 @Builder
 public class ResponseGetBoardReview {
-  private Double reviewEverage;
-  private String reviewCount;
+  private double reviewAverage;
+  private int reviewCount;
 }

@@ -36,7 +36,7 @@ public class Review {
   private String reviewContent;
 
   @Column(name = "review_score", nullable = false)
-  private String reviewScore;
+  private Double reviewScore;
 
   @Column(name = "email", nullable = false)
   private String email;
