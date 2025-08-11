@@ -52,6 +52,14 @@ public class BoardServiceImpl implements BoardService {
 
         boardRepository.save(board);
 
-
     }
+
+    @Override
+    public void deleteBoard(String boardId) {
+        Board board = boardRepository.findByBoardId(boardId)
+            .orElseThrow(() -> new EntityNotFoundException(
+                "해당 boardId로 게시글을 찾을 수 없습니다. boardId=" + boardId));
+        boardRepository.delete(board);
+    }
+
 }

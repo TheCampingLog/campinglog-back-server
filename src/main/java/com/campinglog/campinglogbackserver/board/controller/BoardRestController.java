@@ -7,6 +7,7 @@ import com.campinglog.campinglogbackserver.board.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -34,5 +35,11 @@ public class BoardRestController {
         requestsetBoard.setBoardId(boardId);
         boardService.setBoard(requestsetBoard);
         return ResponseEntity.ok(new ResMessage("success"));
+    }
+
+    @DeleteMapping("/boards/{boardId}")
+    public ResponseEntity<ResMessage> deleteBoard(@PathVariable String boardId) {
+        boardService.deleteBoard(boardId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
