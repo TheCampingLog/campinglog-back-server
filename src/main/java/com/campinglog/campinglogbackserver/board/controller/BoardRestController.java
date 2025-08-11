@@ -2,6 +2,7 @@ package com.campinglog.campinglogbackserver.board.controller;
 
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
 import com.campinglog.campinglogbackserver.board.service.BoardService;
 import java.util.List;
@@ -54,11 +55,10 @@ public class BoardRestController {
         List<ResponseGetBoardRank> result = boardService.getBoardRank(limit);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
+    @GetMapping("/boards/{boardId}")
+    public ResponseEntity<ResponseGetBoardDetail> getBoardDetail(@PathVariable String boardId){
+        ResponseGetBoardDetail result = boardService.getBoardDetail(boardId);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
 
-//    @GetMapping("/boards/rank/camps")
-//    public ResponseEntity<List<ResponseGetCampRank>> getCampRank(
-//        @RequestParam(value = "limit", defaultValue = "3") int limit) {
-//        List<ResponseGetCampRank> result = boardService.getCampRank(limit);
-//        return new ResponseEntity<>(result, HttpStatus.OK);
-//    }
 }

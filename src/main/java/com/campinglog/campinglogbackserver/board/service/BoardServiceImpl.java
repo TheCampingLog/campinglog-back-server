@@ -2,6 +2,7 @@ package com.campinglog.campinglogbackserver.board.service;
 
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
 import com.campinglog.campinglogbackserver.board.entity.Board;
 import com.campinglog.campinglogbackserver.board.repository.BoardRepository;
@@ -81,5 +82,19 @@ public class BoardServiceImpl implements BoardService {
             new TypeToken<List<ResponseGetBoardRank>>() {
             }.getType());
         return responses;
+    }
+
+    @Override
+    public ResponseGetBoardDetail getBoardDetail(String boardId) {
+        Board board = boardRepository.findByBoardId(boardId)
+            .orElseThrow(() -> new EntityNotFoundException(
+                "해당 boardId로 게시글을 찾을 수 없습니다. boardId=" + boardId));
+
+        board.setViewCount(board.getViewCount() + 1);
+        boardRepository.save(board);
+
+        ResponseGetBoardDetail response = modelMapper.map(board, ResponseGetBoardDetail.class);
+
+        return response;
     }
 }
