@@ -9,13 +9,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ResponseGetBoardRank {
-
+public class ResponseGetBoardByKeyword {
     private String boardId;
-    private String boardImage;
     private String title;
-    private String nickname;
-    private int rank;
+    private String content;
+    private String categoryName;
     private int viewCount;
+    private int likeCount;
+    private int commentCount;
+    private String boardImage;
+    private String createdAt;
 
 }
