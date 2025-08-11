@@ -7,6 +7,7 @@ import com.campinglog.campinglogbackserver.board.entity.Board;
 import com.campinglog.campinglogbackserver.board.repository.BoardRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -71,7 +72,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public List<ResponseGetBoardRank> getBoardRank(int limit) {
         LocalDateTime weekAgo = LocalDateTime.now().minusWeeks(1);
-        java.util.Date from = java.util.Date.from(
+        Date from = Date.from(
             weekAgo.atZone(java.time.ZoneId.systemDefault()).toInstant());
         Pageable pageable = PageRequest.of(0, limit);
 
