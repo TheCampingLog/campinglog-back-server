@@ -13,20 +13,20 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-@Table(name = "board_info")
+@Table(name = "review_of_board")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BoardInfo {
+public class ReviewOfBoard {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long Id;
 
   @Column(name = "review_count", nullable = false)
-  private String reviewCount;
+  private Integer reviewCount;
 
   @Column(name = "review_everage", nullable = false)
-  private Double reviewEverage;
+  private Double reviewAverage;
 
   @Column(name = "map_x", nullable = false, unique = true)
   private String mapX;
