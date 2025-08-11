@@ -3,6 +3,8 @@ package com.campinglog.campinglogbackserver.board.controller;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
+
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
 import com.campinglog.campinglogbackserver.board.service.BoardService;
 import java.util.List;
@@ -60,5 +62,15 @@ public class BoardRestController {
         ResponseGetBoardDetail result = boardService.getBoardDetail(boardId);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
+
+
+    @GetMapping("/boards/search")
+    public ResponseEntity<List<ResponseGetBoardByKeyword>> searchBoards(
+        @RequestParam String keyword, @RequestParam(required = false, defaultValue = "1") int page,
+        @RequestParam(required = false, defaultValue = "3") int size) {
+        List<ResponseGetBoardByKeyword> result = boardService.searchBoards(keyword, page, size);
+        return ResponseEntity.ok(result);
+    }
+
 
 }
