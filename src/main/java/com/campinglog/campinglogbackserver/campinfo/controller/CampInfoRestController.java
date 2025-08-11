@@ -5,6 +5,7 @@ import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestGetBoardR
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestRemoveReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestSetReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReview;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReviewRank;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
@@ -73,4 +74,10 @@ public class CampInfoRestController {
     public ResponseEntity<ResponseGetBoardReview> getBoardReview(@PathVariable String mapX, @PathVariable String mapY) {
         return ResponseEntity.ok(campInfoService.getBoardReview(mapX, mapY));
     }
+
+    @GetMapping("/review/board/rank")
+    public ResponseEntity<Mono<List<ResponseGetBoardReviewRank>>> getBoardReviewRank(@RequestParam(value = "limit", defaultValue = "3") int limit) {
+        return ResponseEntity.ok(campInfoService.getBoardReviewRank(limit));
+    }
+
 }

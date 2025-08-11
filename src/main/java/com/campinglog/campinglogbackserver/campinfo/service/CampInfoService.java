@@ -5,6 +5,7 @@ import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestGetBoardR
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestRemoveReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestSetReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReview;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReviewRank;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
@@ -22,4 +23,5 @@ public interface CampInfoService {
     void setReview(RequestSetReview requestSetReview);
     void removeReview(RequestRemoveReview requestRemoveReview);
     List<ResponseGetReviewList> getReviewList(String mapX, String mapY);
+    Mono<List<ResponseGetBoardReviewRank>> getBoardReviewRank(int limit);
 }

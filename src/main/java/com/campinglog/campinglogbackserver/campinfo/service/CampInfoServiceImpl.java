@@ -4,6 +4,7 @@ import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestAddReview
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestRemoveReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestSetReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReview;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReviewRank;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
@@ -17,13 +18,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import reactor.core.scheduler.Schedulers;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +49,57 @@ public class CampInfoServiceImpl implements CampInfoService{
             .reviewAverage(reviewOfBoard.getReviewAverage())
             .reviewCount(reviewOfBoard.getReviewCount())
             .build();
+    }
+
+    @Override
+    public Mono<List<ResponseGetBoardReviewRank>> getBoardReviewRank(int limit) {
+        Pageable pageable = PageRequest.of(
+            0,
+            limit,
+            Sort.by(Sort.Direction.DESC, "reviewAverage")
+                .and(Sort.by(Sort.Direction.DESC, "id"))
+        );
+
+//        List<ResponseGetBoardReviewRank> ranks = reviewOfBoardRepository.findAllByReviewAverageIsNotNull(pageable)
+//            .stream()
+//            .map(rank -> ResponseGetBoardReviewRank.builder()
+//                .reviewAverage(rank.getReviewAverage())
+//                .mapX(rank.getMapX())
+//                .mapY(rank.getMapY())
+//                .build())
+//            .toList();
+//
+//        for (ResponseGetBoardReviewRank rank : ranks) {
+//            Mono<ResponseGetCampDetail> result = getCampDetail(rank.getMapX(), rank.getMapY());
+//            rank.setDoNm()
+//        }
+
+        return Mono.fromCallable(() ->
+            reviewOfBoardRepository.findAllByReviewAverageIsNotNull(pageable)
+                .stream()
+                .map(rank -> ResponseGetBoardReviewRank.builder()
+                    .reviewAverage(rank.getReviewAverage())
+                    .mapY(rank.getMapY())
+                    .mapX(rank.getMapX())
+                    .build())
+                .toList()
+        )
+            .subscribeOn(Schedulers.boundedElastic()) // JPA 호출 격리
+            .flatMapMany(Flux::fromIterable)
+            .flatMapSequential(rank ->    //순서 보장
+                getCampDetail(rank.getMapX(), rank.getMapY())
+                    .map(detail -> {
+                        if(detail != null) {
+                            rank.setDoNm(detail.getDoNm());
+                            rank.setSigunguNm(detail.getSigunguNm());
+                            rank.setFirstImageUrl(detail.getFirstImageUrl());
+                        }
+                        return rank;
+                    })
+                    .defaultIfEmpty(rank)
+            )
+            .collectList();
+
     }
 
     @Override
