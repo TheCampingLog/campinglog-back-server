@@ -5,14 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
 import java.util.List;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResponseGetMemberBoards {
+public class ResponseGetMemberBoardList {
     private List<ResponseGetMemberBoard> items;
     private int page;
     private int size;

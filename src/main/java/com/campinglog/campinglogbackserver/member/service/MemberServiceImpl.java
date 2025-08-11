@@ -5,7 +5,7 @@ import com.campinglog.campinglogbackserver.board.repository.BoardRepository;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoard;
-import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoards;
+import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
 import com.campinglog.campinglogbackserver.member.entity.Member;
 import com.campinglog.campinglogbackserver.member.exception.MemberCreationError;
 import com.campinglog.campinglogbackserver.member.exception.MemberNotFoundError;
@@ -55,7 +55,7 @@ public class MemberServiceImpl implements MemberService {
   }
 
   @Override
-  public ResponseGetMemberBoards getMyBoards(String email, int pageNo) {
+  public ResponseGetMemberBoardList getMyBoards(String email, int pageNo) {
     int pageIndex = Math.max(pageNo - 1, 0); // 1-based → 0-based
     PageRequest pageable = PageRequest.of(pageIndex, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
 
@@ -65,7 +65,7 @@ public class MemberServiceImpl implements MemberService {
             .map(board -> modelMapper.map(board, ResponseGetMemberBoard.class))
             .collect(Collectors.toList());
 
-    return ResponseGetMemberBoards.builder()
+    return ResponseGetMemberBoardList.builder()
             .items(items)
             .page(pageNo)
             .size(PAGE_SIZE)

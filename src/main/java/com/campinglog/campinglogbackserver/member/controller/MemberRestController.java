@@ -2,7 +2,7 @@ package com.campinglog.campinglogbackserver.member.controller;
 
 import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
-import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoards;
+import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
 import com.campinglog.campinglogbackserver.member.service.MemberService;
 import jakarta.validation.Valid;
 import java.util.Map;
@@ -34,7 +34,7 @@ public class MemberRestController {
   }
 
   @GetMapping("/mypage/boards")
-  public ResponseEntity<ResponseGetMemberBoards> getMyBoards(
+  public ResponseEntity<ResponseGetMemberBoardList> getMyBoards(
           @AuthenticationPrincipal String email,
           @RequestParam(name = "pageNo", defaultValue = "1") int pageNo
   ) {
