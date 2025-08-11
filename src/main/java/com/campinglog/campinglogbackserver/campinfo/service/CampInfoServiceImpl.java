@@ -8,6 +8,7 @@ import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoar
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewList;
 import com.campinglog.campinglogbackserver.campinfo.entity.BoardInfo;
 import com.campinglog.campinglogbackserver.campinfo.entity.Review;
 import com.campinglog.campinglogbackserver.campinfo.repository.ReviewRepository;
@@ -86,6 +87,22 @@ public class CampInfoServiceImpl implements CampInfoService{
             .build()
             .getId());
 
+    }
+
+    @Override
+    public List<ResponseGetReviewList> getReviewList(String mapX, String mapY) {
+        List<ResponseGetReviewList> list = new ArrayList<>();
+        List<Review> reviews = reviewRepository.findByMapXAndMapY(mapX, mapY);
+        for(Review review : reviews) {
+            ResponseGetReviewList reviewUnit = ResponseGetReviewList.builder()
+                .reviewImage(review.getReviewImage())
+                .reviewContent(review.getReviewContent())
+                .reviewScore(review.getReviewScore())
+                .email(review.getEmail())
+                .build();
+            list.add(reviewUnit);
+        }
+        return list;
     }
 
     @Override

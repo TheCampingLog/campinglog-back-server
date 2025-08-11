@@ -41,6 +41,9 @@ public class Review {
   @Column(name = "email", nullable = false)
   private String email;
 
+  @Column(name = "review_image")
+  private String reviewImage;
+
   @CreationTimestamp
   @Column(name = "post_at", nullable = false)
   private LocalDateTime postAt;
