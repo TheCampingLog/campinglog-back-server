@@ -1,6 +1,7 @@
 package com.campinglog.campinglogbackserver.board.controller;
 
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
+import com.campinglog.campinglogbackserver.board.dto.request.RequestAddComment;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
@@ -62,6 +63,12 @@ public class BoardRestController {
         @RequestParam(required = false, defaultValue = "3") int size) {
         List<ResponseGetBoardByKeyword> result = boardService.searchBoards(keyword, page, size);
         return ResponseEntity.ok(result);
+    }
+    @PostMapping("boards/{boardId}/comment")
+    public ResponseEntity<Map<String, String>> addComment(@PathVariable String boardId, @RequestBody RequestAddComment requestAddComment){
+        requestAddComment.setBoardId(boardId);
+        boardService.addComment(boardId, requestAddComment);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
 

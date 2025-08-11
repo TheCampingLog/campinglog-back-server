@@ -1,11 +1,14 @@
 package com.campinglog.campinglogbackserver.board.service;
 
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
+import com.campinglog.campinglogbackserver.board.dto.request.RequestAddComment;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
 import com.campinglog.campinglogbackserver.board.entity.Board;
+import com.campinglog.campinglogbackserver.board.entity.Comment;
 import com.campinglog.campinglogbackserver.board.repository.BoardRepository;
+import com.campinglog.campinglogbackserver.board.repository.CommentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,6 +26,7 @@ import org.springframework.stereotype.Service;
 public class BoardServiceImpl implements BoardService {
 
     private final BoardRepository boardRepository;
+    private final CommentRepository commentRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -98,5 +102,21 @@ public class BoardServiceImpl implements BoardService {
                 return response;
             })
             .collect(Collectors.toList());
+    }
+
+    @Override
+    public void addComment(String boardId, RequestAddComment requestAddComment) {
+        Board board = boardRepository.findByBoardId(boardId)
+            .orElseThrow(() -> new EntityNotFoundException(
+                "해당 boardId로 게시글을 찾을 수 없습니다. boardId=" + boardId));
+
+        Comment comment = modelMapper.map(requestAddComment, Comment.class);
+        comment.setCreatedAt(LocalDateTime.now());
+
+        commentRepository.save(comment);
+
+        board.setCommentCount(board.getCommentCount() + 1);
+        boardRepository.save(board);
+
     }
 }
