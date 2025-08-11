@@ -1,8 +1,8 @@
 package com.campinglog.campinglogbackserver.member.controller;
 
 import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
-import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetUser;
-import com.campinglog.campinglogbackserver.member.entity.Member;
+import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
+import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoards;
 import com.campinglog.campinglogbackserver.member.service.MemberService;
 import jakarta.validation.Valid;
 import java.util.Map;
@@ -10,11 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,9 +28,17 @@ public class MemberRestController {
   }
 
   @GetMapping("/mypage")
-  public ResponseEntity<ResponseGetUser> getMember(
+  public ResponseEntity<ResponseGetMember> getMember(
           @AuthenticationPrincipal String email) {
     return ResponseEntity.ok(memberService.getMemberByEmail(email));
+  }
+
+  @GetMapping("/mypage/boards")
+  public ResponseEntity<ResponseGetMemberBoards> getMyBoards(
+          @AuthenticationPrincipal String email,
+          @RequestParam(name = "pageNo", defaultValue = "1") int pageNo
+  ) {
+    return ResponseEntity.ok(memberService.getMyBoards(email, pageNo));
   }
 
   @GetMapping("/test")

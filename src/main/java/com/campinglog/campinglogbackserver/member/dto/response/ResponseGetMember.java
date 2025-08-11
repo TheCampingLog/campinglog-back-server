@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 @Builder
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class ResponseGetUser {
+public class ResponseGetMember {
   private String email;
   private String name;
   private String nickname;
