@@ -1,9 +1,7 @@
 package com.campinglog.campinglogbackserver.config;
 
-import com.campinglog.campinglogbackserver.account.repository.MemberRespository;
+import com.campinglog.campinglogbackserver.member.repository.MemberRespository;
 import com.campinglog.campinglogbackserver.security.CustomUserDetailsService;
-import com.campinglog.campinglogbackserver.security.JwtAuthenticationFilter;
-import com.campinglog.campinglogbackserver.security.JwtBasicAuthenticationFilter;
 import com.campinglog.campinglogbackserver.security.JwtProperties;
 import com.campinglog.campinglogbackserver.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -49,8 +47,8 @@ public class SecurityConfig {
 //        new JwtAuthenticationFilter(authenticationManager, jwtTokenProvider, jwtProperties));
 //    http.addFilter(new JwtBasicAuthenticationFilter(authenticationManager, jwtProperties));
 //    http.authorizeHttpRequests(auth ->
-//        auth.requestMatchers("/h2-console/**", "/api/account", "/login").permitAll() // H2 콘솔 허용
-//            .requestMatchers("/api/account/test").hasAnyRole("ADMIN", "USER")
+//        auth.requestMatchers("/h2-console/**", "/api/member", "/login").permitAll() // H2 콘솔 허용
+//            .requestMatchers("/api/member/test").hasAnyRole("ADMIN", "USER")
 //            .anyRequest().hasAnyRole("ADMIN", "USER"));
 
     return http.build();

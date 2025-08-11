@@ -1,6 +1,6 @@
-package com.campinglog.campinglogbackserver.account.repository;
+package com.campinglog.campinglogbackserver.member.repository;
 
-import com.campinglog.campinglogbackserver.account.entity.Member;
+import com.campinglog.campinglogbackserver.member.entity.Member;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -1,7 +1,7 @@
 package com.campinglog.campinglogbackserver.security;
 
-import com.campinglog.campinglogbackserver.account.entity.Member;
-import com.campinglog.campinglogbackserver.account.repository.MemberRespository;
+import com.campinglog.campinglogbackserver.member.entity.Member;
+import com.campinglog.campinglogbackserver.member.repository.MemberRespository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,12 +18,12 @@ public class CustomUserDetailsService implements UserDetailsService {
   @Override
   public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
-    Optional<Member> user = memberRespository.findByEmail(email);
+    Optional<Member> member = memberRespository.findByEmail(email);
 
-    if (user.isEmpty()) {
+    if (member.isEmpty()) {
       throw new UsernameNotFoundException("사용자를 찾을 수 가 없습니다");
     }
 
-    return new CustomUserDetails(user.get());
+    return new CustomUserDetails(member.get());
   }
 }

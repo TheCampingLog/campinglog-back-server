@@ -1,4 +1,4 @@
-package com.campinglog.campinglogbackserver.account.exception;
+package com.campinglog.campinglogbackserver.member.exception;
 
 import static com.campinglog.campinglogbackserver.common.exception.ExceptionHandlerUtil.buildResponse;
 
@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@RestControllerAdvice(basePackages = "com.campinglog.campinglogbackserver.account")
+@RestControllerAdvice(basePackages = "com.campinglog.campinglogbackserver.member")
 public class MemberExceptionHandler {
 
   @ExceptionHandler(MemberCreationError.class)

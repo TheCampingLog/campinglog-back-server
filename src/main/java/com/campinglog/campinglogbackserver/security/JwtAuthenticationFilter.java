@@ -1,6 +1,6 @@
 package com.campinglog.campinglogbackserver.security;
 
-import com.campinglog.campinglogbackserver.account.dto.request.RequestLogin;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestLogin;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
