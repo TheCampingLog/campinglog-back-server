@@ -1,6 +1,7 @@
 package com.campinglog.campinglogbackserver.board.repository;
 
 import com.campinglog.campinglogbackserver.board.entity.Board;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
@@ -13,5 +14,5 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     Optional<Board> findByBoardId(String boardId);
 
     List<Board> findByCreatedAtAfterOrderByLikeCountDescViewCountDescCreatedAtDesc(
-        java.util.Date from, Pageable pageable);
+        LocalDateTime from, Pageable pageable);
 }

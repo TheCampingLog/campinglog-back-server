@@ -71,12 +71,11 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public List<ResponseGetBoardRank> getBoardRank(int limit) {
         LocalDateTime weekAgo = LocalDateTime.now().minusWeeks(1);
-        java.util.Date from = java.util.Date.from(
-            weekAgo.atZone(java.time.ZoneId.systemDefault()).toInstant());
+
         Pageable pageable = PageRequest.of(0, limit);
 
         List<Board> boards = boardRepository.findByCreatedAtAfterOrderByLikeCountDescViewCountDescCreatedAtDesc(
-            from, pageable);
+            weekAgo, pageable);
 
         List<ResponseGetBoardRank> responses = modelMapper.map(boards,
             new TypeToken<List<ResponseGetBoardRank>>() {

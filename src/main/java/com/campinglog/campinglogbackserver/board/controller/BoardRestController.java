@@ -3,9 +3,9 @@ package com.campinglog.campinglogbackserver.board.controller;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
-import com.campinglog.campinglogbackserver.board.dto.response.ResponseMessage;
 import com.campinglog.campinglogbackserver.board.service.BoardService;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,13 +28,14 @@ public class BoardRestController {
 
 
     @PostMapping("/boards")
-    public ResponseEntity<ResponseMessage> addBoard(@RequestBody RequestAddBoard requestAddBoard) {
+    public ResponseEntity<Map<String, String>> addBoard(
+        @RequestBody RequestAddBoard requestAddBoard) {
         boardService.addBoard(requestAddBoard);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PutMapping("/boards/{boardId}")
-    public ResponseEntity<ResponseMessage> setBoard(@PathVariable String boardId,
+    public ResponseEntity<Map<String, String>> setBoard(@PathVariable String boardId,
         @RequestBody RequestSetBoard requestsetBoard) {
         requestsetBoard.setBoardId(boardId);
         boardService.setBoard(requestsetBoard);
@@ -42,7 +43,7 @@ public class BoardRestController {
     }
 
     @DeleteMapping("/boards/{boardId}")
-    public ResponseEntity<ResponseMessage> deleteBoard(@PathVariable String boardId) {
+    public ResponseEntity<Map<String, String>> deleteBoard(@PathVariable String boardId) {
         boardService.deleteBoard(boardId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -53,4 +54,11 @@ public class BoardRestController {
         List<ResponseGetBoardRank> result = boardService.getBoardRank(limit);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
+
+//    @GetMapping("/boards/rank/camps")
+//    public ResponseEntity<List<ResponseGetCampRank>> getCampRank(
+//        @RequestParam(value = "limit", defaultValue = "3") int limit) {
+//        List<ResponseGetCampRank> result = boardService.getCampRank(limit);
+//        return new ResponseEntity<>(result, HttpStatus.OK);
+//    }
 }
