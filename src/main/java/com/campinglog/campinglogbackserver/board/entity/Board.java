@@ -6,7 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.util.Date;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -43,15 +43,21 @@ public class Board {
     @Column(name = "like_count")
     private int likeCount;
 
+    @Column(name = "rank")
+    private int rank;
+
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     @ColumnDefault(value = "CURRENT_TIMESTAMP")
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "email", nullable = false)
     private String email;
 
     @Column(name = "board_id", nullable = false, unique = true)
     private String boardId;
+
+    @Column(name = "nickname")
+    private String nickname;
 
 
 }
