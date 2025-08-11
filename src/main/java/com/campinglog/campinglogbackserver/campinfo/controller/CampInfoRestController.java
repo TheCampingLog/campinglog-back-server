@@ -8,6 +8,7 @@ import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoar
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewList;
 import com.campinglog.campinglogbackserver.campinfo.service.CampInfoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -68,5 +69,8 @@ public class CampInfoRestController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-
+    @GetMapping("/review/{mapX}/{mapY}")
+    public ResponseEntity<List<ResponseGetReviewList>> getReviewList(@PathVariable String mapX, @PathVariable String mapY) {
+        return ResponseEntity.ok(campInfoService.getReviewList(mapX, mapY));
+    }
 }
