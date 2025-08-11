@@ -1,9 +1,9 @@
-package com.campinglog.campinglogbackserver.account.repository;
+package com.campinglog.campinglogbackserver.member.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.campinglog.campinglogbackserver.account.entity.Member;
+import com.campinglog.campinglogbackserver.member.entity.Member;
 import java.time.LocalDate;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -33,10 +33,10 @@ class MemberRespositoryTests {
     String email = "test@example.com";
 
     // when
-    Optional<Member> resultUser = memberRespository.findByEmail(email);
+    Optional<Member> resultMember = memberRespository.findByEmail(email);
 
     // then
-    assertThat(resultUser).isPresent();
+    assertThat(resultMember).isPresent();
   }
 
   @Test
@@ -47,16 +47,16 @@ class MemberRespositoryTests {
     String email = "test2@example.com";
 
     // when
-    Optional<Member> resultUser = memberRespository.findByEmail(email);
+    Optional<Member> resultMember = memberRespository.findByEmail(email);
 
     // then
-    assertThat(resultUser).isEmpty();
+    assertThat(resultMember).isEmpty();
 
   }
 
   @Test
   @Order(3)
-  public void addUser_validData_Success() {
+  public void addMember() {
     // given
     Member member = Member.builder()
         .email("testuser@example.com")
@@ -68,17 +68,17 @@ class MemberRespositoryTests {
         .build();
 
     // when
-    Member resultUser = memberRespository.save(member);
+    Member resultMember = memberRespository.save(member);
 
     // then
-    assertThat(resultUser).isNotNull();
-    assertThat(resultUser.getEmail()).isEqualTo("testuser@example.com");
+    assertThat(resultMember).isNotNull();
+    assertThat(resultMember.getEmail()).isEqualTo("testuser@example.com");
 
   }
 
   @Test
   @Order(4)
-  public void addUser_NullEmail_JpaSystemException() {
+  public void addMember_NullEmail_JpaSystemException() {
     // given
     Member member = Member.builder()
         .password("Password123!")  // 실제 테스트 시 암호화 처리 고려

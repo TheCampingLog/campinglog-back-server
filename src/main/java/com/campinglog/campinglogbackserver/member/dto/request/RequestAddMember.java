@@ -1,4 +1,4 @@
-package com.campinglog.campinglogbackserver.account.dto.request;
+package com.campinglog.campinglogbackserver.member.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;

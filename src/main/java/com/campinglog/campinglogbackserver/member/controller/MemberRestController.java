@@ -1,7 +1,7 @@
-package com.campinglog.campinglogbackserver.account.controller;
+package com.campinglog.campinglogbackserver.member.controller;
 
-import com.campinglog.campinglogbackserver.account.dto.request.RequestAddMember;
-import com.campinglog.campinglogbackserver.account.service.MemberService;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
+import com.campinglog.campinglogbackserver.member.service.MemberService;
 import jakarta.validation.Valid;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/account")
+@RequestMapping("/api/member")
 public class MemberRestController {
 
   private final MemberService memberService;
 
   @PostMapping
-  public ResponseEntity<Map<String, String>> addUser(
+  public ResponseEntity<Map<String, String>> addMember(
       @Valid @RequestBody RequestAddMember requestAddMember) {
     memberService.addMember(requestAddMember);
 

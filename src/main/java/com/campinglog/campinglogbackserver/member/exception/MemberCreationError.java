@@ -1,4 +1,4 @@
-package com.campinglog.campinglogbackserver.account.exception;
+package com.campinglog.campinglogbackserver.member.exception;
 
 public class MemberCreationError extends RuntimeException {
 

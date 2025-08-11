@@ -1,4 +1,4 @@
-package com.campinglog.campinglogbackserver.account.entity;
+package com.campinglog.campinglogbackserver.member.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-@Table(name = "users")
+@Table(name = "members")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -42,7 +42,7 @@ public class Member {
   Role role;
   @Column(name = "member_grade", nullable = false)
   @Enumerated(EnumType.STRING)
-  UserGrade memberGrade;
+  MemberGrade memberGrade;
   @Column(name = "join_date", nullable = false)
   LocalDate joinDate;
 
@@ -54,7 +54,7 @@ public class Member {
     }
 
     if (this.memberGrade == null) {
-      this.memberGrade = UserGrade.GREEN;
+      this.memberGrade = MemberGrade.GREEN;
     }
 
     if (this.joinDate == null) {
@@ -68,7 +68,7 @@ public class Member {
     ADMIN
   }
 
-  public enum UserGrade {
+  public enum MemberGrade {
     GREEN, BLUE, RED, BLACK
   }
 

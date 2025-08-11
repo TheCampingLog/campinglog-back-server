@@ -1,6 +1,6 @@
 package com.campinglog.campinglogbackserver.security;
 
-import com.campinglog.campinglogbackserver.account.entity.Member;
+import com.campinglog.campinglogbackserver.member.entity.Member;
 import java.util.Collection;
 import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
@@ -9,25 +9,25 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 public class CustomUserDetails implements UserDetails {
 
-  private final Member user;
+  private final Member member;
 
-  public CustomUserDetails(Member user) {
-    this.user = user;
+  public CustomUserDetails(Member member) {
+    this.member = member;
   }
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
+    return List.of(new SimpleGrantedAuthority("ROLE_" + member.getRole()));
   }
 
   @Override
   public String getPassword() {
-    return user.getPassword();
+    return member.getPassword();
   }
 
   @Override
   public String getUsername() {
-    return user.getEmail();
+    return member.getEmail();
   }
 
   @Override
@@ -51,6 +51,6 @@ public class CustomUserDetails implements UserDetails {
   }
 
   public Member getUser() {
-    return user;
+    return member;
   }
 }

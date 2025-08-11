@@ -1,10 +1,10 @@
-package com.campinglog.campinglogbackserver.account.service;
+package com.campinglog.campinglogbackserver.member.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.campinglog.campinglogbackserver.account.dto.request.RequestAddMember;
-import com.campinglog.campinglogbackserver.account.entity.Member;
-import com.campinglog.campinglogbackserver.account.repository.MemberRespository;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
+import com.campinglog.campinglogbackserver.member.entity.Member;
+import com.campinglog.campinglogbackserver.member.repository.MemberRespository;
 import java.time.LocalDate;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 class MemberServiceTest {
 
   @Autowired
-  private MemberServiceImpl accountService;
+  private MemberServiceImpl memberService;
 
   @Autowired
   private BCryptPasswordEncoder passwordEncoder;
@@ -48,13 +48,13 @@ class MemberServiceTest {
         .build();
 
     // when
-    accountService.addMember(requestAddMember);
-    Optional<Member> resultUser = memberRespository.findByEmail(requestAddMember.getEmail());
+    memberService.addMember(requestAddMember);
+    Optional<Member> resultMember = memberRespository.findByEmail(requestAddMember.getEmail());
 
     // then
-    assertThat(requestAddMember.getPassword()).isNotEqualTo(resultUser.get().getPassword());
+    assertThat(requestAddMember.getPassword()).isNotEqualTo(resultMember.get().getPassword());
     assertThat(passwordEncoder.matches(requestAddMember.getPassword(),
-        resultUser.get().getPassword())).isTrue();
+        resultMember.get().getPassword())).isTrue();
 
   }
 

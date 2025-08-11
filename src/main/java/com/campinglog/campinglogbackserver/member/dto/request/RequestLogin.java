@@ -1,4 +1,4 @@
-package com.campinglog.campinglogbackserver.account.dto.request;
+package com.campinglog.campinglogbackserver.member.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

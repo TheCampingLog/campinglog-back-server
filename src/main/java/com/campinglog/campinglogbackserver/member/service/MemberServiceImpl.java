@@ -1,9 +1,9 @@
-package com.campinglog.campinglogbackserver.account.service;
+package com.campinglog.campinglogbackserver.member.service;
 
-import com.campinglog.campinglogbackserver.account.dto.request.RequestAddMember;
-import com.campinglog.campinglogbackserver.account.entity.Member;
-import com.campinglog.campinglogbackserver.account.exception.MemberCreationError;
-import com.campinglog.campinglogbackserver.account.repository.MemberRespository;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
+import com.campinglog.campinglogbackserver.member.entity.Member;
+import com.campinglog.campinglogbackserver.member.exception.MemberCreationError;
+import com.campinglog.campinglogbackserver.member.repository.MemberRespository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
