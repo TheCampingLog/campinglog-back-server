@@ -50,5 +50,8 @@ public class Board {
     @Column(name = "email", nullable = false)
     private String email;
 
+    @Column(name = "board_id", nullable = false, unique = true)
+    private String boardId;
+
 
 }

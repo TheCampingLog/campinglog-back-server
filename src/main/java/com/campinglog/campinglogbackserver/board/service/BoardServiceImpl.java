@@ -1,8 +1,11 @@
 package com.campinglog.campinglogbackserver.board.service;
 
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
+import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
 import com.campinglog.campinglogbackserver.board.entity.Board;
-import com.campinglog.campinglogbackserver.board.repository.BoardRepositry;
+import com.campinglog.campinglogbackserver.board.repository.BoardRepository;
+import jakarta.persistence.EntityNotFoundException;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -11,12 +14,44 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class BoardServiceImpl implements BoardService {
 
-    private final BoardRepositry boardRepositry;
+    private final BoardRepository boardRepository;
     private final ModelMapper modelMapper;
 
     @Override
     public void addBoard(RequestAddBoard requestAddBoard) {
         Board board = modelMapper.map(requestAddBoard, Board.class);
-        Board savedBoard = boardRepositry.save(board);
+        board.setBoardId(UUID.randomUUID().toString());
+        boardRepository.save(board);
+    }
+
+    @Override
+    public void setBoard(RequestSetBoard requestSetBoard) {
+        if (requestSetBoard.getBoardId() == null || requestSetBoard.getBoardId().isBlank()) {
+            throw new IllegalArgumentException("boardId는 필수입니다.");
+        }
+
+        Board board = boardRepository.findByBoardId(requestSetBoard.getBoardId())
+            .orElseThrow(() -> new EntityNotFoundException(
+                "해당 boardId로 게시글을 찾을 수 없습니다. boardId=" + requestSetBoard.getBoardId()));
+
+        if (requestSetBoard.getTitle() != null) {
+            board.setTitle(requestSetBoard.getTitle());
+        }
+        if (requestSetBoard.getContent() != null) {
+            board.setContent(requestSetBoard.getContent());
+        }
+        if (requestSetBoard.getCategoryName() != null) {
+            board.setCategoryName(requestSetBoard.getCategoryName());
+        }
+        if (requestSetBoard.getBoardImage() != null) {
+            board.setBoardImage(requestSetBoard.getBoardImage());
+        }
+        if (requestSetBoard.getEmail() != null) {
+            board.setEmail(requestSetBoard.getEmail());
+        }
+
+        boardRepository.save(board);
+
+
     }
 }
