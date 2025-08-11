@@ -1,6 +1,7 @@
 package com.campinglog.campinglogbackserver.campinfo.service;
 
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestAddReview;
+import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestGetBoardReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestRemoveReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestSetReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReview;
@@ -9,15 +10,18 @@ import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCamp
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewList;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewListPage;
 import com.campinglog.campinglogbackserver.campinfo.entity.ReviewOfBoard;
 import com.campinglog.campinglogbackserver.campinfo.entity.Review;
 import com.campinglog.campinglogbackserver.campinfo.repository.ReviewOfBoardRepository;
 import com.campinglog.campinglogbackserver.campinfo.repository.ReviewRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -60,6 +64,7 @@ public class CampInfoServiceImpl implements CampInfoService{
                 .and(Sort.by(Sort.Direction.DESC, "id"))
         );
 
+        //동기 처리(block())
 //        List<ResponseGetBoardReviewRank> ranks = reviewOfBoardRepository.findAllByReviewAverageIsNotNull(pageable)
 //            .stream()
 //            .map(rank -> ResponseGetBoardReviewRank.builder()
@@ -177,21 +182,46 @@ public class CampInfoServiceImpl implements CampInfoService{
     }
 
     @Override
-    public List<ResponseGetReviewList> getReviewList(String mapX, String mapY) {
-        List<ResponseGetReviewList> list = new ArrayList<>();
-        List<Review> reviews = reviewRepository.findByMapXAndMapY(mapX, mapY);
-        for(Review review : reviews) {
-            ResponseGetReviewList reviewUnit = ResponseGetReviewList.builder()
+    public ResponseGetReviewListPage getReviewList(String mapX, String mapY, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "postAt"));
+        Page<Review> reviews = reviewRepository.findByMapXAndMapY(mapX, mapY, pageable);
+
+        List<ResponseGetReviewList> content = reviews.getContent().stream()
+            .map(review -> ResponseGetReviewList.builder()
                 .reviewImage(review.getReviewImage())
                 .reviewContent(review.getReviewContent())
                 .reviewScore(review.getReviewScore())
                 .email(review.getEmail())
-                .postAt(review.getPostAt())
                 .setAt(review.getSetAt())
-                .build();
-            list.add(reviewUnit);
-        }
-        return list;
+                .postAt(review.getPostAt())
+                .build())
+            .toList();
+
+        return ResponseGetReviewListPage.builder()
+            .content(content)
+            .page(reviews.getNumber())
+            .size(reviews.getSize())
+            .hasNext(reviews.hasNext())
+            .totalElement(reviews.getTotalElements())
+            .totalPages(reviews.getTotalPages())
+            .build();
+
+//        List<ResponseGetReviewList> list = new ArrayList<>();
+//
+//
+//        List<Review> reviews = reviewRepository.findByMapXAndMapY(mapX, mapY);
+//        for(Review review : reviews) {
+//            ResponseGetReviewList reviewUnit = ResponseGetReviewList.builder()
+//                .reviewImage(review.getReviewImage())
+//                .reviewContent(review.getReviewContent())
+//                .reviewScore(review.getReviewScore())
+//                .email(review.getEmail())
+//                .postAt(review.getPostAt())
+//                .setAt(review.getSetAt())
+//                .build();
+//            list.add(reviewUnit);
+//        }
+//        return list;
     }
 
     @Override

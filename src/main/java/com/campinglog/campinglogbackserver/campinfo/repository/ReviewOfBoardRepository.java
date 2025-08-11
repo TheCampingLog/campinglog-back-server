@@ -3,6 +3,7 @@ package com.campinglog.campinglogbackserver.campinfo.repository;
 import com.campinglog.campinglogbackserver.campinfo.entity.Review;
 import com.campinglog.campinglogbackserver.campinfo.entity.ReviewOfBoard;
 import java.util.List;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
