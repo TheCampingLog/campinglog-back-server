@@ -2,11 +2,14 @@ package com.campinglog.campinglogbackserver.board.service;
 
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
-import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetComments;
 import com.campinglog.campinglogbackserver.board.entity.Board;
+import com.campinglog.campinglogbackserver.board.entity.Comment;
 import com.campinglog.campinglogbackserver.board.repository.BoardRepository;
+import com.campinglog.campinglogbackserver.board.repository.CommentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,6 +28,7 @@ public class BoardServiceImpl implements BoardService {
 
     private final BoardRepository boardRepository;
     private final ModelMapper modelMapper;
+    private final CommentRepository commentRepository;
 
     @Override
     public void addBoard(RequestAddBoard requestAddBoard) {
@@ -99,6 +103,9 @@ public class BoardServiceImpl implements BoardService {
 
         return response;
 
+    }
+
+    @Override
     public List<ResponseGetBoardByKeyword> searchBoards(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
 
@@ -112,5 +119,21 @@ public class BoardServiceImpl implements BoardService {
             })
             .collect(Collectors.toList());
 
+    }
+
+
+    @Override
+    public List<ResponseGetComments> getComments(String boardId, int page, int size) {
+        Board board = boardRepository.findByBoardId(boardId)
+            .orElseThrow(() -> new EntityNotFoundException(
+                "해당 boardId로 게시글을 찾을 수 없습니다. boardId=" + boardId));
+
+        Pageable pageable = PageRequest.of(page - 1, size);
+
+        List<Comment> comments = commentRepository.findByBoardIdOrderByCreatedAtDesc(boardId,
+            pageable);
+
+        return comments.stream().map(comment -> modelMapper.map(comment, ResponseGetComments.class))
+            .collect(Collectors.toList());
     }
 }

@@ -2,10 +2,10 @@ package com.campinglog.campinglogbackserver.board.controller;
 
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
-import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
-
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetComments;
 import com.campinglog.campinglogbackserver.board.service.BoardService;
 import java.util.List;
 import java.util.Map;
@@ -57,8 +57,9 @@ public class BoardRestController {
         List<ResponseGetBoardRank> result = boardService.getBoardRank(limit);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
+
     @GetMapping("/boards/{boardId}")
-    public ResponseEntity<ResponseGetBoardDetail> getBoardDetail(@PathVariable String boardId){
+    public ResponseEntity<ResponseGetBoardDetail> getBoardDetail(@PathVariable String boardId) {
         ResponseGetBoardDetail result = boardService.getBoardDetail(boardId);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
@@ -69,6 +70,14 @@ public class BoardRestController {
         @RequestParam String keyword, @RequestParam(required = false, defaultValue = "1") int page,
         @RequestParam(required = false, defaultValue = "3") int size) {
         List<ResponseGetBoardByKeyword> result = boardService.searchBoards(keyword, page, size);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/boards/{boardId}/comments")
+    public ResponseEntity<List<ResponseGetComments>> getComments(@PathVariable String boardId,
+        @RequestParam(required = false, defaultValue = "1") int page,
+        @RequestParam(required = false, defaultValue = "3") int size){
+        List<ResponseGetComments> result = boardService.getComments(boardId, page, size);
         return ResponseEntity.ok(result);
     }
 
