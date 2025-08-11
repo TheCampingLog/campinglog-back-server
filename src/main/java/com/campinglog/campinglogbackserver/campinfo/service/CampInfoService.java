@@ -8,6 +8,7 @@ import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoar
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewList;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -20,4 +21,5 @@ public interface CampInfoService {
     ResponseGetBoardReview getBoardReview(String mapX, String mapY);
     void setReview(RequestSetReview requestSetReview);
     void removeReview(RequestRemoveReview requestRemoveReview);
+    List<ResponseGetReviewList> getReviewList(String mapX, String mapY);
 }
