@@ -2,6 +2,7 @@ package com.campinglog.campinglogbackserver.board.controller;
 
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddComment;
+import com.campinglog.campinglogbackserver.board.dto.request.RequestAddLike;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
@@ -86,6 +87,12 @@ public class BoardRestController {
         List<ResponseGetComments> result = boardService.getComments(boardId, page, size);
         return ResponseEntity.ok(result);
     }
+    @PostMapping("/boards/{boardId}/likes")
+    public ResponseEntity<Map<String, String>> addLike(@PathVariable String boardId, @RequestBody RequestAddLike requestAddLike){
+        boardService.addLike(boardId, requestAddLike);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
 
 
 }

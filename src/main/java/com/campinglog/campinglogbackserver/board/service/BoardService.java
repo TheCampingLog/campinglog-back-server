@@ -2,6 +2,7 @@ package com.campinglog.campinglogbackserver.board.service;
 
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddComment;
+import com.campinglog.campinglogbackserver.board.dto.request.RequestAddLike;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
 
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
@@ -28,5 +29,7 @@ public interface BoardService {
     void addComment(String boardId, RequestAddComment requestAddComment);
 
     List<ResponseGetComments> getComments(String boardId, int page, int size);
+
+    void addLike(String boardId, RequestAddLike requestAddLike);
 
 }
