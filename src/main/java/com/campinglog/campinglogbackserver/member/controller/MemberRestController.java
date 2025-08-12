@@ -1,6 +1,9 @@
 package com.campinglog.campinglogbackserver.member.controller;
 
 import com.campinglog.campinglogbackserver.member.dto.request.*;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestChangePassword;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestVerifyPassword;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberProfileImage;
