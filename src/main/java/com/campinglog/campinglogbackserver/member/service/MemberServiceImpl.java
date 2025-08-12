@@ -11,6 +11,9 @@ import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberProfileImage;
 import com.campinglog.campinglogbackserver.member.entity.Member;
 import com.campinglog.campinglogbackserver.member.exception.*;
+import com.campinglog.campinglogbackserver.member.exception.MemberCreationError;
+import com.campinglog.campinglogbackserver.member.exception.MemberNotFoundError;
+import com.campinglog.campinglogbackserver.member.exception.PasswordMismatchError;
 import com.campinglog.campinglogbackserver.member.repository.MemberRespository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
