@@ -59,6 +59,14 @@ public class MemberRestController {
     return ResponseEntity.ok(memberService.getMyBoards(email, pageNo));
   }
 
+  @PutMapping("/mypage/grade")
+  public ResponseEntity<Map<String, String>> refreshMemberGrade(
+          @AuthenticationPrincipal String email
+  ) {
+    memberService.updateMemberGrade(email);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT); // 팀 컨벤션: 204, 바디 없음
+  }
+
   @GetMapping("/mypage/profileImage")
   public ResponseEntity<ResponseGetMemberProfileImage> getProfileImage(
           @AuthenticationPrincipal String email

@@ -26,4 +26,6 @@ public interface MemberService {
   void updateProfileImage(String email, @Valid RequestSetProfileImage request);
 
   void deleteMember(String email);
+
+  void updateMemberGrade(String email);
 }

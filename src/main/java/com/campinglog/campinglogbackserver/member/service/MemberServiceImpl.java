@@ -205,4 +205,34 @@ public class MemberServiceImpl implements MemberService {
     }
   }
 
+  @Override
+  @Transactional
+  public void updateMemberGrade(String email) {
+    Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
+    // 1) 내가 쓴 글의 총 좋아요 합계
+    long totalLikes = boardRepository.sumLikeCountByEmail(email);
+    // 2) 합계 → 등급 매핑
+    Member.MemberGrade newGrade;
+    if (totalLikes >= 100) {
+      newGrade = Member.MemberGrade.BLACK;
+    } else if (totalLikes >= 50) {
+      newGrade = Member.MemberGrade.RED;
+    } else if (totalLikes >= 20) {
+      newGrade = Member.MemberGrade.BLUE;
+    } else {
+      newGrade = Member.MemberGrade.GREEN;
+    }
+
+    // 3) 변경될 때만 업데이트
+    if (member.getMemberGrade() != newGrade) {
+      member.setMemberGrade(newGrade);
+      try {
+        memberRepository.save(member);
+      } catch (RuntimeException e) {
+        throw new MemberCreationError("회원 등급 갱신에 실패했습니다");
+      }
+    }
+  }
+
 }
