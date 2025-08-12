@@ -1,7 +1,12 @@
 package com.campinglog.campinglogbackserver.board.service;
 
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
+import com.campinglog.campinglogbackserver.board.dto.request.RequestAddComment;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategory;
+
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
+
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
@@ -23,5 +28,10 @@ public interface BoardService {
     List<ResponseGetBoardByKeyword> searchBoards(String keyword, int page, int size);
 
     List<ResponseGetComments> getComments(String boardId, int page, int size);
+
+    void addComment(String boardId, RequestAddComment requestAddComment);
+
+    List<ResponseGetBoardByCategory> getBoardsByCategory(String category, int page, int size);
+
 
 }

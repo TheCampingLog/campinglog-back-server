@@ -1,7 +1,10 @@
 package com.campinglog.campinglogbackserver.board.service;
 
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
+import com.campinglog.campinglogbackserver.board.dto.request.RequestAddComment;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategory;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
@@ -27,6 +30,7 @@ import org.springframework.stereotype.Service;
 public class BoardServiceImpl implements BoardService {
 
     private final BoardRepository boardRepository;
+    private final CommentRepository commentRepository;
     private final ModelMapper modelMapper;
     private final CommentRepository commentRepository;
 
@@ -121,10 +125,9 @@ public class BoardServiceImpl implements BoardService {
 
     }
 
-
     @Override
     public List<ResponseGetComments> getComments(String boardId, int page, int size) {
-        Board board = boardRepository.findByBoardId(boardId)
+      Board board = boardRepository.findByBoardId(boardId)
             .orElseThrow(() -> new EntityNotFoundException(
                 "해당 boardId로 게시글을 찾을 수 없습니다. boardId=" + boardId));
 
@@ -135,5 +138,41 @@ public class BoardServiceImpl implements BoardService {
 
         return comments.stream().map(comment -> modelMapper.map(comment, ResponseGetComments.class))
             .collect(Collectors.toList());
+    }
+
+    @Override
+    public void addComment(String boardId, RequestAddComment requestAddComment) {
+        Board board = boardRepository.findByBoardId(boardId)
+            .orElseThrow(() -> new EntityNotFoundException(
+                "해당 boardId로 게시글을 찾을 수 없습니다. boardId=" + boardId));
+        Comment comment = modelMapper.map(requestAddComment, Comment.class);
+        comment.setBoardId(boardId);
+        comment.setCommentId(UUID.randomUUID().toString());
+        comment.setCreatedAt(LocalDateTime.now());
+
+        commentRepository.save(comment);
+
+        board.setCommentCount(board.getCommentCount() + 1);
+        boardRepository.save(board);
+
+    }
+
+ 
+     @Override
+    public List<ResponseGetBoardByCategory> getBoardsByCategory(String category, int page,
+        int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        List<Board> boards = boardRepository.findByCategoryNameOrderByCreatedAtDesc(category,
+            pageable);
+
+        return boards.stream()
+            .map(board -> {
+                ResponseGetBoardByCategory response = modelMapper.map(board,
+                    ResponseGetBoardByCategory.class);
+
+                return response;
+            })
+            .collect(Collectors.toList());
+
     }
 }

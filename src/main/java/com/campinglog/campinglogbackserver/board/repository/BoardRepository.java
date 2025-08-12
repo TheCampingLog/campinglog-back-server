@@ -17,4 +17,6 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
         LocalDateTime from, Pageable pageable);
 
     List<Board> findByTitleContainingOrderByCreatedAtDesc(String title, Pageable pageable);
+
+    List<Board> findByCategoryNameOrderByCreatedAtDesc(String categoryName, Pageable pageable);
 }

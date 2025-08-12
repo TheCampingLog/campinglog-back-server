@@ -59,5 +59,8 @@ public class Board {
     @Column(name = "nickname")
     private String nickname;
 
+    @Column(name = "comment_count")
+    private int commentCount;
+
 
 }
