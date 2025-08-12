@@ -1,9 +1,6 @@
 package com.campinglog.campinglogbackserver.member.service;
 
-import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
-import com.campinglog.campinglogbackserver.member.dto.request.RequestChangePassword;
-import com.campinglog.campinglogbackserver.member.dto.request.RequestUpdateMember;
-import com.campinglog.campinglogbackserver.member.dto.request.RequestVerifyPassword;
+import com.campinglog.campinglogbackserver.member.dto.request.*;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberProfileImage;
@@ -23,4 +20,8 @@ public interface MemberService {
   void changePassword(String email, @Valid RequestChangePassword request);
 
   void updateMember(String email, @Valid RequestUpdateMember request);
+
+  void addProfileImage(String email, @Valid RequestSetProfileImage request);
+
+  void updateProfileImage(String email, @Valid RequestSetProfileImage request);
 }
