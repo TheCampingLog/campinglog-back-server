@@ -1,6 +1,8 @@
 package com.campinglog.campinglogbackserver.member.controller;
 
 import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
+import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetUser;
+import com.campinglog.campinglogbackserver.member.entity.Member;
 import com.campinglog.campinglogbackserver.member.service.MemberService;
 import jakarta.validation.Valid;
 import java.util.Map;
@@ -27,6 +29,12 @@ public class MemberRestController {
     memberService.addMember(requestAddMember);
 
     return new ResponseEntity<>(HttpStatus.CREATED);
+  }
+
+  @GetMapping("/mypage")
+  public ResponseEntity<ResponseGetUser> getMember(
+          @AuthenticationPrincipal String email) {
+    return ResponseEntity.ok(memberService.getMemberByEmail(email));
   }
 
   @GetMapping("/test")
