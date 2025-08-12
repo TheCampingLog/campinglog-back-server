@@ -9,3 +9,4 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     List<Comment> findByBoardIdOrderByCreatedAtDesc(String boardId, Pageable pageable);
 }
+

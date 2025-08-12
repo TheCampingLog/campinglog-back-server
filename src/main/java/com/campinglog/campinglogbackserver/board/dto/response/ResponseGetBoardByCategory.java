@@ -9,11 +9,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ResponseGetComments {
-    private String commentId;
+public class ResponseGetBoardByCategory {
+
+    private String category;
+    private String boardId;
+    private String title;
     private String content;
-    private String nickname;
+    private String categoryName;
+    private int viewCount;
+    private int likeCount;
+    private int commentCount;
+    private String boardImage;
     private String createdAt;
 
 }
-

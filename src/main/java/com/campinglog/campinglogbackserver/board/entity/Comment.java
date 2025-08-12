@@ -40,5 +40,5 @@ public class Comment {
     @Column(name = "board_id", nullable = false)
     private String boardId;
 
-
 }
+
