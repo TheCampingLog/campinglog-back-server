@@ -1,6 +1,7 @@
 package com.campinglog.campinglogbackserver.member.controller;
 
 import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestChangePassword;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestVerifyPassword;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
@@ -71,6 +72,15 @@ public class MemberRestController {
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
+  @PutMapping("/mypage/password")
+  public ResponseEntity<Map<String, String>> changePassword(
+          @AuthenticationPrincipal String email,
+          @Valid @RequestBody RequestChangePassword request
+  ) {
+    memberService.changePassword(email, request);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+  
   @GetMapping("/test")
   public ResponseEntity<Map<String, String>> test(
       @AuthenticationPrincipal String email) {

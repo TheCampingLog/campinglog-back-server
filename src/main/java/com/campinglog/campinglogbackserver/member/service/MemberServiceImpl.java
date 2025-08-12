@@ -3,6 +3,7 @@ package com.campinglog.campinglogbackserver.member.service;
 import com.campinglog.campinglogbackserver.board.entity.Board;
 import com.campinglog.campinglogbackserver.board.repository.BoardRepository;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestChangePassword;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestVerifyPassword;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoard;
@@ -10,6 +11,9 @@ import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberProfileImage;
 import com.campinglog.campinglogbackserver.member.entity.Member;
 import com.campinglog.campinglogbackserver.member.exception.*;
+import com.campinglog.campinglogbackserver.member.exception.MemberCreationError;
+import com.campinglog.campinglogbackserver.member.exception.MemberNotFoundError;
+import com.campinglog.campinglogbackserver.member.exception.PasswordMismatchError;
 import com.campinglog.campinglogbackserver.member.repository.MemberRespository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -93,7 +97,6 @@ public class MemberServiceImpl implements MemberService {
     if (!matched) {
       throw new PasswordMismatchError("비밀번호가 일치하지 않습니다.");
     }
-    // 일치하면 그냥 리턴 → 컨트롤러에서 204 응답
   }
 
   @Override
@@ -107,6 +110,29 @@ public class MemberServiceImpl implements MemberService {
   public void assertNicknameAvailable(String nickname) {
     if (memberRepository.existsByNickname(nickname)) {
       throw new DuplicateNicknameError("이미 사용 중인 닉네임입니다.");
+    }
+  }
+
+  @Override
+  @Transactional
+  public void changePassword(String email, RequestChangePassword request) {
+    // 1) 회원 조회
+    Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
+    boolean matches = bCryptPasswordEncoder.matches(request.getCurrentPassword(), member.getPassword());
+    if (!matches) {
+      throw new PasswordMismatchError("현재 비밀번호가 일치하지 않습니다.");
+    }
+    // 3) 새 비밀번호가 기존과 동일한지 방어 (선택)
+    if (bCryptPasswordEncoder.matches(request.getNewPassword(), member.getPassword())) {
+      throw new IllegalArgumentException("새 비밀번호가 기존 비밀번호와 동일합니다.");
+    }
+    // 4) 변경 및 저장
+    member.setPassword(bCryptPasswordEncoder.encode(request.getNewPassword()));
+    try {
+      memberRepository.save(member);
+    } catch (RuntimeException e) {
+      throw new MemberCreationError("비밀번호 변경에 실패했습니다");
     }
   }
 
