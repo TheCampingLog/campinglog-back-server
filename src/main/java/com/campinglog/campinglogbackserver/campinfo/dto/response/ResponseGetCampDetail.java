@@ -34,5 +34,7 @@ public class ResponseGetCampDetail {
   private String animalCmgCl;// 애완동물 출입
   private String eqpmnLendCl;// 캠핑장비 대여
   private String posblFcltyCl;// 주변 이용가능시설
+  private String doNm;
+  private String sigunguNm;
 
 }
