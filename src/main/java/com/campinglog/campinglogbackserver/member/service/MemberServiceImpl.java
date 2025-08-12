@@ -55,14 +55,14 @@ public class MemberServiceImpl implements MemberService {
 
   @Override
   @Transactional
-  public ResponseGetMember getMemberByEmail(String email) {
+  public ResponseGetMember getMember(String email) {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
     return modelMapper.map(member, ResponseGetMember.class);
   }
 
   @Override
-  public ResponseGetMemberBoardList getMyBoards(String email, int pageNo) {
+  public ResponseGetMemberBoardList getBoards(String email, int pageNo) {
     int pageIndex = Math.max(pageNo - 1, 0); // 1-based → 0-based
     PageRequest pageable = PageRequest.of(pageIndex, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
 
@@ -102,14 +102,14 @@ public class MemberServiceImpl implements MemberService {
   }
 
   @Override
-  public void assertEmailAvailable(String email) {
+  public void checkEmailAvailable(String email) {
     if (memberRepository.existsByEmail(email)) {
       throw new DuplicateEmailError("이미 사용 중인 이메일입니다.");
     }
   }
 
   @Override
-  public void assertNicknameAvailable(String nickname) {
+  public void checkNicknameAvailable(String nickname) {
     if (memberRepository.existsByNickname(nickname)) {
       throw new DuplicateNicknameError("이미 사용 중인 닉네임입니다.");
     }
@@ -117,7 +117,7 @@ public class MemberServiceImpl implements MemberService {
 
   @Override
   @Transactional
-  public void changePassword(String email, RequestChangePassword request) {
+  public void setPassword(String email, RequestChangePassword request) {
     // 1) 회원 조회
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
@@ -139,7 +139,7 @@ public class MemberServiceImpl implements MemberService {
   }
 
   @Override
-  public void updateMember(String email, RequestUpdateMember request) {
+  public void setMember(String email, RequestUpdateMember request) {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
 
@@ -189,7 +189,7 @@ public class MemberServiceImpl implements MemberService {
   }
 
   @Override
-  public void updateProfileImage(String email, RequestSetProfileImage request) {
+  public void setProfileImage(String email, RequestSetProfileImage request) {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
     member.setProfileImage(request.getProfileImage());
@@ -197,6 +197,18 @@ public class MemberServiceImpl implements MemberService {
       memberRepository.save(member);
     } catch (RuntimeException e) {
       throw new MemberCreationError("프로필 이미지 수정에 실패했습니다.");
+    }
+  }
+
+  @Override
+  public void deleteMember(String email) {
+    Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
+
+    try {
+      memberRepository.delete(member);
+    } catch (RuntimeException e) {
+      throw new MemberCreationError("회원 탈퇴에 실패했습니다.");
     }
   }
 

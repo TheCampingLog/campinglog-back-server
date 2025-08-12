@@ -13,14 +13,19 @@ import jakarta.validation.Valid;
 public interface MemberService {
 
   public void addMember(RequestAddMember requestAddMember);
-  ResponseGetMember getMemberByEmail(String email);
-  ResponseGetMemberBoardList getMyBoards(String email, int pageNo);
-  ResponseGetMemberProfileImage getProfileImage(String email);
-  void verifyPassword(String email, RequestVerifyPassword request);
-  void assertEmailAvailable(String email);
-  void assertNicknameAvailable(String nickname);
-  void changePassword(String email, @Valid RequestChangePassword request);
-  void updateMember(String email, @Valid RequestUpdateMember request);
-  void addProfileImage(String email, @Valid RequestSetProfileImage request);
-  void updateProfileImage(String email, @Valid RequestSetProfileImage request);
-  }
+  public void addProfileImage(String email, @Valid RequestSetProfileImage request);
+
+  public ResponseGetMember getMember(String email);
+  public ResponseGetMemberBoardList getBoards(String email, int pageNo);
+  public ResponseGetMemberProfileImage getProfileImage(String email);
+
+  public void setPassword(String email, @Valid RequestChangePassword request);
+  public void setMember(String email, @Valid RequestUpdateMember request);
+  public void setProfileImage(String email, @Valid RequestSetProfileImage request);
+
+  public void deleteMember(String email);
+
+  public void checkEmailAvailable(String email);
+  public void checkNicknameAvailable(String nickname);
+  public void verifyPassword(String email, RequestVerifyPassword request);
+}
