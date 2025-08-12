@@ -3,6 +3,7 @@ package com.campinglog.campinglogbackserver.board.service;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategory;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
 import com.campinglog.campinglogbackserver.board.entity.Board;
@@ -87,6 +88,18 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
+    public ResponseGetBoardDetail getBoardDetail(String boardId) {
+        Board board = boardRepository.findByBoardId(boardId)
+            .orElseThrow(() -> new EntityNotFoundException(
+                "해당 boardId로 게시글을 찾을 수 없습니다. boardId=" + boardId));
+
+        board.setViewCount(board.getViewCount() + 1);
+        boardRepository.save(board);
+
+        ResponseGetBoardDetail response = modelMapper.map(board, ResponseGetBoardDetail.class);
+
+        return response;
+
     public List<ResponseGetBoardByKeyword> searchBoards(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
 
@@ -99,6 +112,7 @@ public class BoardServiceImpl implements BoardService {
                 return response;
             })
             .collect(Collectors.toList());
+
     }
 
     @Override
