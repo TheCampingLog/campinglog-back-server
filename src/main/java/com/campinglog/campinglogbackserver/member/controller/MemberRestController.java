@@ -51,24 +51,24 @@ public class MemberRestController {
   }
 
   @PostMapping("/mypage/verifyPassword")
-  public ResponseEntity<Void> verifyPassword(
+  public ResponseEntity<Map<String, String>> verifyPassword(
           @AuthenticationPrincipal String email,
           @Valid @RequestBody RequestVerifyPassword request
   ) {
     memberService.verifyPassword(email, request);
-    return ResponseEntity.noContent().build();
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @GetMapping("/check/email")
-  public ResponseEntity<Void> checkEmail(@RequestParam String email) {
+  public ResponseEntity<Map<String, String>> checkEmail(@RequestParam String email) {
     memberService.assertEmailAvailable(email);
-    return ResponseEntity.noContent().build();
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @GetMapping("/check/nickname")
-  public ResponseEntity<Void> checkNickname(@RequestParam String nickname) {
+  public ResponseEntity<Map<String, String>> checkNickname(@RequestParam String nickname) {
     memberService.assertNicknameAvailable(nickname);
-    return ResponseEntity.noContent().build();
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @GetMapping("/test")
