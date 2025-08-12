@@ -2,6 +2,7 @@ package com.campinglog.campinglogbackserver.member.controller;
 
 import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestChangePassword;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestUpdateMember;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestVerifyPassword;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
@@ -34,6 +35,15 @@ public class MemberRestController {
   public ResponseEntity<ResponseGetMember> getMember(
           @AuthenticationPrincipal String email) {
     return ResponseEntity.ok(memberService.getMemberByEmail(email));
+  }
+
+  @PutMapping("/mypage")
+  public ResponseEntity<Map<String, String>> updateMember(
+          @AuthenticationPrincipal String email,
+          @Valid @RequestBody RequestUpdateMember request
+  ) {
+    memberService.updateMember(email, request);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @GetMapping("/mypage/boards")
@@ -78,7 +88,7 @@ public class MemberRestController {
           @Valid @RequestBody RequestChangePassword request
   ) {
     memberService.changePassword(email, request);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT); // 204, 바디 없음(컨벤션)
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @GetMapping("/test")

@@ -4,6 +4,7 @@ import com.campinglog.campinglogbackserver.board.entity.Board;
 import com.campinglog.campinglogbackserver.board.repository.BoardRepository;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestChangePassword;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestUpdateMember;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestVerifyPassword;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoard;
@@ -130,6 +131,44 @@ public class MemberServiceImpl implements MemberService {
       memberRepository.save(member);
     } catch (RuntimeException e) {
       throw new MemberCreationError("비밀번호 변경에 실패했습니다");
+    }
+  }
+
+  @Override
+  public void updateMember(String email, RequestUpdateMember request) {
+    Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
+
+    // 1) 닉네임 변경 시: 자기 자신 제외 중복 체크
+    if (request.getNickname() != null && !request.getNickname().equals(member.getNickname())) {
+      if (memberRepository.existsByNicknameAndEmailNot(request.getNickname(), email)) {
+        throw new DuplicateNicknameError("이미 사용 중인 닉네임입니다.");
+      }
+      member.setNickname(request.getNickname());
+    }
+
+    // 2) 전화번호 변경 시: 자기 자신 제외 중복 체크
+    if (request.getPhoneNumber() != null && !request.getPhoneNumber().equals(member.getPhoneNumber())) {
+      if (memberRepository.existsByPhoneNumberAndEmailNot(request.getPhoneNumber(), email)) {
+        throw new DuplicatePhoneNumberError("이미 사용 중인 전화번호입니다.");
+      }
+      member.setPhoneNumber(request.getPhoneNumber());
+    }
+
+    // 3) 그 외 필드 널 스킵 매핑
+    boolean prevSkip = modelMapper.getConfiguration().isSkipNullEnabled();
+    modelMapper.getConfiguration().setSkipNullEnabled(true);
+    try {
+      modelMapper.map(request, member); // null인 값은 덮어쓰지 않음
+    } finally {
+      modelMapper.getConfiguration().setSkipNullEnabled(prevSkip);
+    }
+
+    // 4) 저장 (실패 시 래핑)
+    try {
+      memberRepository.save(member);
+    } catch (RuntimeException e) {
+      throw new MemberCreationError("회원 정보 수정에 실패했습니다");
     }
   }
 
