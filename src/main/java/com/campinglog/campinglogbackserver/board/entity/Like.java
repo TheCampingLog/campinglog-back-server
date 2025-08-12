@@ -1,5 +1,6 @@
 package com.campinglog.campinglogbackserver.board.entity;
 
+import jakarta.persistence.Cacheable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,30 +16,29 @@ import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Data
-@Table(name = "comment")
+@Table(name = "board_like")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Comment {
+public class Like {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "content", nullable = false)
-    private String content;
+    @Column(name = "like_id", nullable = false, unique = true)
+    private String likeId;
+
+    @Column(name = "board_id", nullable = false)
+    private String boardId;
+
+    @Column(name = "email", nullable = false)
+    private String email;
+
+    @Column(name = "nickname")
+    private String nickname;
 
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     @ColumnDefault(value = "CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
 
-    @Column(name = "nickname")
-    private String nickname;
-
-    @Column(name = "comment_id", nullable = false, unique = true)
-    private String commentId;
-
-    @Column(name = "board_id", nullable = false)
-    private String boardId;
-
 }
-

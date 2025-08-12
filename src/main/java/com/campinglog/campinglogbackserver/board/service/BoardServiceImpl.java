@@ -2,17 +2,20 @@ package com.campinglog.campinglogbackserver.board.service;
 
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddComment;
+import com.campinglog.campinglogbackserver.board.dto.request.RequestAddLike;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategory;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
-import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetComments;
 import com.campinglog.campinglogbackserver.board.entity.Board;
 import com.campinglog.campinglogbackserver.board.entity.Comment;
+import com.campinglog.campinglogbackserver.board.entity.Like;
 import com.campinglog.campinglogbackserver.board.repository.BoardRepository;
 import com.campinglog.campinglogbackserver.board.repository.CommentRepository;
+import com.campinglog.campinglogbackserver.board.repository.LikeRepository;
+
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,7 +35,8 @@ public class BoardServiceImpl implements BoardService {
     private final BoardRepository boardRepository;
     private final CommentRepository commentRepository;
     private final ModelMapper modelMapper;
-    private final CommentRepository commentRepository;
+    private final LikeRepository likeRepository;
+
 
     @Override
     public void addBoard(RequestAddBoard requestAddBoard) {
@@ -141,6 +145,25 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
+    public void addLike(String boardId, RequestAddLike requestAddLike) {
+        Board board = boardRepository.findByBoardId(boardId)
+            .orElseThrow(() -> new EntityNotFoundException(
+                "해당 boardId로 게시글을 찾을 수 없습니다. boardId=" + boardId));
+
+        boolean alreadyLiked = likeRepository.existsByBoardIdAndEmail(boardId, requestAddLike.getEmail());
+        if (alreadyLiked) {
+            throw new RuntimeException("이미 좋아요 누른 게시글");
+        }
+        Like like = modelMapper.map(requestAddLike, Like.class);
+        like.setBoardId(boardId);
+        like.setLikeId(UUID.randomUUID().toString());
+        likeRepository.save(like);
+
+        board.setLikeCount(board.getLikeCount() + 1);
+        boardRepository.save(board);
+    }
+
+    @Override
     public void addComment(String boardId, RequestAddComment requestAddComment) {
         Board board = boardRepository.findByBoardId(boardId)
             .orElseThrow(() -> new EntityNotFoundException(
@@ -173,6 +196,5 @@ public class BoardServiceImpl implements BoardService {
                 return response;
             })
             .collect(Collectors.toList());
-
     }
 }

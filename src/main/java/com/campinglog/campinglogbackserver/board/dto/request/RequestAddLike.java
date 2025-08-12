@@ -1,4 +1,4 @@
-package com.campinglog.campinglogbackserver.board.dto.response;
+package com.campinglog.campinglogbackserver.board.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,11 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ResponseGetComments {
-    private String commentId;
-    private String content;
+public class RequestAddLike {
+    private String email;
     private String nickname;
-    private String createdAt;
 
 }
-
