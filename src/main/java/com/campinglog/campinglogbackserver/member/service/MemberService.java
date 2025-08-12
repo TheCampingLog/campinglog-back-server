@@ -1,10 +1,12 @@
 package com.campinglog.campinglogbackserver.member.service;
 
 import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
-import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetUser;
+import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
+import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
 
 public interface MemberService {
 
   public void addMember(RequestAddMember requestAddMember);
-  ResponseGetUser getMemberByEmail(String email);
+  ResponseGetMember getMemberByEmail(String email);
+  ResponseGetMemberBoardList getMyBoards(String email, int pageNo);
 }
