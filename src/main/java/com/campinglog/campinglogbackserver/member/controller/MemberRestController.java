@@ -2,6 +2,7 @@ package com.campinglog.campinglogbackserver.member.controller;
 
 import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestChangePassword;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestUpdateMember;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestVerifyPassword;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
@@ -34,6 +35,15 @@ public class MemberRestController {
   public ResponseEntity<ResponseGetMember> getMember(
           @AuthenticationPrincipal String email) {
     return ResponseEntity.ok(memberService.getMemberByEmail(email));
+  }
+
+  @PutMapping("/mypage")
+  public ResponseEntity<Map<String, String>> updateMember(
+          @AuthenticationPrincipal String email,
+          @Valid @RequestBody RequestUpdateMember request
+  ) {
+    memberService.updateMember(email, request);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @GetMapping("/mypage/boards")
@@ -80,7 +90,37 @@ public class MemberRestController {
     memberService.changePassword(email, request);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
+  
+  @PostMapping("/mypage/verifyPassword")
+  public ResponseEntity<Map<String, String>> verifyPassword(
+          @AuthenticationPrincipal String email,
+          @Valid @RequestBody RequestVerifyPassword request
+  ) {
+    memberService.verifyPassword(email, request);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
 
+  @GetMapping("/check/email")
+  public ResponseEntity<Map<String, String>> checkEmail(@RequestParam String email) {
+    memberService.assertEmailAvailable(email);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @GetMapping("/check/nickname")
+  public ResponseEntity<Map<String, String>> checkNickname(@RequestParam String nickname) {
+    memberService.assertNicknameAvailable(nickname);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @PutMapping("/mypage/password")
+  public ResponseEntity<Map<String, String>> changePassword(
+          @AuthenticationPrincipal String email,
+          @Valid @RequestBody RequestChangePassword request
+  ) {
+    memberService.changePassword(email, request);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+  
   @GetMapping("/test")
   public ResponseEntity<Map<String, String>> test(
       @AuthenticationPrincipal String email) {
