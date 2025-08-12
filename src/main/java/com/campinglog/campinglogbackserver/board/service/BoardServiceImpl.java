@@ -2,6 +2,7 @@ package com.campinglog.campinglogbackserver.board.service;
 
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategory;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
@@ -108,6 +109,24 @@ public class BoardServiceImpl implements BoardService {
         return boardPage.stream().map(board -> {
                 ResponseGetBoardByKeyword response = modelMapper.map(board,
                     ResponseGetBoardByKeyword.class);
+                return response;
+            })
+            .collect(Collectors.toList());
+
+    }
+
+    @Override
+    public List<ResponseGetBoardByCategory> getBoardsByCategory(String category, int page,
+        int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        List<Board> boards = boardRepository.findByCategoryNameOrderByCreatedAtDesc(category,
+            pageable);
+
+        return boards.stream()
+            .map(board -> {
+                ResponseGetBoardByCategory response = modelMapper.map(board,
+                    ResponseGetBoardByCategory.class);
+
                 return response;
             })
             .collect(Collectors.toList());
