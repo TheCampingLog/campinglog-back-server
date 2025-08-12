@@ -13,4 +13,7 @@ public interface MemberService {
   ResponseGetMemberBoardList getMyBoards(String email, int pageNo);
   ResponseGetMemberProfileImage getProfileImage(String email);
   void verifyPassword(String email, RequestVerifyPassword request);
+
+  void assertEmailAvailable(String email);
+  void assertNicknameAvailable(String nickname);
 }

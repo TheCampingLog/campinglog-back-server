@@ -9,9 +9,7 @@ import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberProfileImage;
 import com.campinglog.campinglogbackserver.member.entity.Member;
-import com.campinglog.campinglogbackserver.member.exception.MemberCreationError;
-import com.campinglog.campinglogbackserver.member.exception.MemberNotFoundError;
-import com.campinglog.campinglogbackserver.member.exception.PasswordMismatchError;
+import com.campinglog.campinglogbackserver.member.exception.*;
 import com.campinglog.campinglogbackserver.member.repository.MemberRespository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -96,6 +94,20 @@ public class MemberServiceImpl implements MemberService {
       throw new PasswordMismatchError("비밀번호가 일치하지 않습니다.");
     }
     // 일치하면 그냥 리턴 → 컨트롤러에서 204 응답
+  }
+
+  @Override
+  public void assertEmailAvailable(String email) {
+    if (memberRepository.existsByEmail(email)) {
+      throw new DuplicateEmailError("이미 사용 중인 이메일입니다.");
+    }
+  }
+
+  @Override
+  public void assertNicknameAvailable(String nickname) {
+    if (memberRepository.existsByNickname(nickname)) {
+      throw new DuplicateNicknameError("이미 사용 중인 닉네임입니다.");
+    }
   }
 
 }

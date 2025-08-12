@@ -19,4 +19,15 @@ public class MemberExceptionHandler {
         e.getMessage());
   }
 
+  @ExceptionHandler(DuplicateEmailError.class)
+  public ResponseEntity<CustomErrorResponse> handleDupEmail(DuplicateEmailError e,
+                                                            HttpServletRequest request) {
+    return buildResponse(request, HttpStatus.BAD_REQUEST, e.getMessage());
+  }
+
+  @ExceptionHandler(DuplicateNicknameError.class)
+  public ResponseEntity<CustomErrorResponse> handleDupNickname(DuplicateNicknameError e,
+                                                               HttpServletRequest request) {
+    return buildResponse(request, HttpStatus.BAD_REQUEST, e.getMessage());
+  }
 }
