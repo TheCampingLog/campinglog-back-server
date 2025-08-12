@@ -4,26 +4,35 @@ import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestAddReview
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestRemoveReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestSetReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReview;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReviewRank;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewList;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewListPage;
 import com.campinglog.campinglogbackserver.campinfo.entity.ReviewOfBoard;
 import com.campinglog.campinglogbackserver.campinfo.entity.Review;
 import com.campinglog.campinglogbackserver.campinfo.repository.ReviewOfBoardRepository;
 import com.campinglog.campinglogbackserver.campinfo.repository.ReviewRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import reactor.core.scheduler.Schedulers;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +55,59 @@ public class CampInfoServiceImpl implements CampInfoService{
     }
 
     @Override
+    public Mono<List<ResponseGetBoardReviewRank>> getBoardReviewRank(int limit) {
+        Pageable pageable = PageRequest.of(
+            0,
+            limit,
+            Sort.by(Sort.Direction.DESC, "reviewAverage")
+                .and(Sort.by(Sort.Direction.DESC, "id"))
+        );
+
+        //동기 처리(block())
+//        List<ResponseGetBoardReviewRank> ranks = reviewOfBoardRepository.findAllByReviewAverageIsNotNull(pageable)
+//            .stream()
+//            .map(rank -> ResponseGetBoardReviewRank.builder()
+//                .reviewAverage(rank.getReviewAverage())
+//                .mapX(rank.getMapX())
+//                .mapY(rank.getMapY())
+//                .build())
+//            .toList();
+//
+//        for (ResponseGetBoardReviewRank rank : ranks) {
+//            Mono<ResponseGetCampDetail> result = getCampDetail(rank.getMapX(), rank.getMapY());
+//            rank.setDoNm()
+//        }
+
+        return Mono.fromCallable(() ->
+            reviewOfBoardRepository.findAllByReviewAverageIsNotNull(pageable)
+                .stream()
+                .map(rank -> ResponseGetBoardReviewRank.builder()
+                    .reviewAverage(rank.getReviewAverage())
+                    .mapY(rank.getMapY())
+                    .mapX(rank.getMapX())
+                    .build())
+                .toList()
+        )
+            .subscribeOn(Schedulers.boundedElastic()) // JPA 호출 격리
+            .flatMapMany(Flux::fromIterable)
+            .flatMapSequential(rank ->    //순서 보장
+                getCampDetail(rank.getMapX(), rank.getMapY())
+                    .map(detail -> {
+                        if(detail != null) {
+                            rank.setDoNm(detail.getDoNm());
+                            rank.setSigunguNm(detail.getSigunguNm());
+                            rank.setFirstImageUrl(detail.getFirstImageUrl());
+                            rank.setFacltNm(detail.getFacltNm());
+                        }
+                        return rank;
+                    })
+                    .defaultIfEmpty(rank)
+            )
+            .collectList();
+
+    }
+
+    @Override
     public void addReview(RequestAddReview requestAddReview) {
         Review review = Review.builder()
             .email(requestAddReview.getEmail())
@@ -53,6 +115,7 @@ public class CampInfoServiceImpl implements CampInfoService{
             .mapY(requestAddReview.getMapY())
             .reviewContent(requestAddReview.getReviewContent())
             .reviewScore(requestAddReview.getReviewScore())
+            .reviewImage(requestAddReview.getReviewImage())
             .build();
         reviewRepository.save(review);
 
@@ -100,13 +163,18 @@ public class CampInfoServiceImpl implements CampInfoService{
                 reviewOfBoardRepository.save(reviewOfBoard);
             }
 
+            if(!review.getReviewImage().equals(requestSetReview.getNewReviewImage())) {
+                review.setReviewImage(requestSetReview.getNewReviewImage());
+                update = true;
+            }
+
             if(update) {
                 reviewRepository.save(review);
             }
         }
-
     }
 
+    @Transactional
     @Override
     public void removeReview(RequestRemoveReview requestRemoveReview) {
         Review review = Review.builder().Id(requestRemoveReview.getId()).build();
@@ -117,24 +185,53 @@ public class CampInfoServiceImpl implements CampInfoService{
         reviewOfBoard.setReviewAverage((reviewOfBoard.getReviewAverage()*reviewOfBoard.getReviewCount()-deleteReview.get().getReviewScore()) / (reviewOfBoard.getReviewCount()-1));
         reviewOfBoard.setReviewCount(reviewOfBoard.getReviewCount()-1);
         reviewOfBoardRepository.save(reviewOfBoard);
+        ReviewOfBoard checkReviewOfBoard = reviewOfBoardRepository.findByMapXAndMapY(deleteReview.get().getMapX(), deleteReview.get().getMapY());
+        if(checkReviewOfBoard.getReviewCount()==0) {
+            reviewOfBoardRepository.deleteByMapXAndMapY(deleteReview.get().getMapX(), deleteReview.get().getMapY());
+        }
     }
 
     @Override
-    public List<ResponseGetReviewList> getReviewList(String mapX, String mapY) {
-        List<ResponseGetReviewList> list = new ArrayList<>();
-        List<Review> reviews = reviewRepository.findByMapXAndMapY(mapX, mapY);
-        for(Review review : reviews) {
-            ResponseGetReviewList reviewUnit = ResponseGetReviewList.builder()
+    public ResponseGetReviewListPage getReviewList(String mapX, String mapY, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "postAt"));
+        Page<Review> reviews = reviewRepository.findByMapXAndMapY(mapX, mapY, pageable);
+
+        List<ResponseGetReviewList> content = reviews.getContent().stream()
+            .map(review -> ResponseGetReviewList.builder()
                 .reviewImage(review.getReviewImage())
                 .reviewContent(review.getReviewContent())
                 .reviewScore(review.getReviewScore())
                 .email(review.getEmail())
-                .postAt(review.getPostAt())
                 .setAt(review.getSetAt())
-                .build();
-            list.add(reviewUnit);
-        }
-        return list;
+                .postAt(review.getPostAt())
+                .build())
+            .toList();
+
+        return ResponseGetReviewListPage.builder()
+            .content(content)
+            .page(reviews.getNumber())
+            .size(reviews.getSize())
+            .hasNext(reviews.hasNext())
+            .totalElement(reviews.getTotalElements())
+            .totalPages(reviews.getTotalPages())
+            .build();
+
+//        List<ResponseGetReviewList> list = new ArrayList<>();
+//
+//
+//        List<Review> reviews = reviewRepository.findByMapXAndMapY(mapX, mapY);
+//        for(Review review : reviews) {
+//            ResponseGetReviewList reviewUnit = ResponseGetReviewList.builder()
+//                .reviewImage(review.getReviewImage())
+//                .reviewContent(review.getReviewContent())
+//                .reviewScore(review.getReviewScore())
+//                .email(review.getEmail())
+//                .postAt(review.getPostAt())
+//                .setAt(review.getSetAt())
+//                .build();
+//            list.add(reviewUnit);
+//        }
+//        return list;
     }
 
     @Override
@@ -156,7 +253,7 @@ public class CampInfoServiceImpl implements CampInfoService{
             .timeout(Duration.ofSeconds(6))
             .map(json -> {
                 List<ResponseGetCampDetail> list = parseItems(json, ResponseGetCampDetail.class);
-                if(list.isEmpty()) return null;
+                if(list.isEmpty()) throw new IllegalArgumentException("해당 게시글이 존재하지 않습니다.");
                 return list.get(0);
             });
     } //eternalApiException
@@ -173,12 +270,6 @@ public class CampInfoServiceImpl implements CampInfoService{
                 .queryParam("numOfRows", 4)
                 .build())
             .retrieve()
-//                .onStatus(HttpStatusCode::is4xxClientError, r ->
-//                        r.bodyToMono(String.class)
-//                                .flatMap(b -> Mono.error(new ExternalApiException("400: "+b))))
-//                .onStatus(HttpStatusCode::is5xxServerError, r ->
-//                        r.bodyToMono(String.class)
-//                                .flatMap(b -> Mono.error(new ExternalApiException("500: " + b))))
             .bodyToMono(String.class)
             .timeout(Duration.ofSeconds(6))
             .map(json -> {
@@ -202,12 +293,6 @@ public class CampInfoServiceImpl implements CampInfoService{
                 .queryParam("keyword", keyword)
                 .build())
             .retrieve()
-//                .onStatus(HttpStatusCode::is4xxClientError, r ->
-//                        r.bodyToMono(String.class)
-//                                .flatMap(b -> Mono.error(new ExternalApiException("400: "+b))))
-//                .onStatus(HttpStatusCode::is5xxServerError, r ->
-//                        r.bodyToMono(String.class)
-//                                .flatMap(b -> Mono.error(new ExternalApiException("500: " + b))))
             .bodyToMono(String.class)
             .timeout(Duration.ofSeconds(6))
             .map(json -> {

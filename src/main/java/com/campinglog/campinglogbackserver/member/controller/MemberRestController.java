@@ -90,12 +90,11 @@ public class MemberRestController {
     memberService.changePassword(email, request);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
-
+  
   @GetMapping("/test")
   public ResponseEntity<Map<String, String>> test(
       @AuthenticationPrincipal String email) {
     return ResponseEntity.ok(Map.of("email", email));
   }
-
 
 }
