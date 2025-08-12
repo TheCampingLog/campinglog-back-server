@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ReviewOfBoardRepository extends JpaRepository<ReviewOfBoard, Long> {
   ReviewOfBoard findByMapXAndMapY(String mapX, String mapY);
+  void deleteByMapXAndMapY(String MapX, String mapY);
   boolean existsByMapXAndMapY(String mapX, String mapY);
   interface BoardRankView {
     Long getId();

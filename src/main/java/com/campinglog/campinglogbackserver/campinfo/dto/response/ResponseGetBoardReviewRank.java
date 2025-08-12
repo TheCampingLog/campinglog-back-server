@@ -12,4 +12,5 @@ public class ResponseGetBoardReviewRank {
   private String sigunguNm;
   private String mapX;
   private String mapY;
+  private String facltNm;
 }
