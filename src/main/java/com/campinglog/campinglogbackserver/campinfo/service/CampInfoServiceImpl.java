@@ -1,29 +1,39 @@
 package com.campinglog.campinglogbackserver.campinfo.service;
 
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestAddReview;
+import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestGetBoardReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestRemoveReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestSetReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReview;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReviewRank;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewList;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewListPage;
 import com.campinglog.campinglogbackserver.campinfo.entity.ReviewOfBoard;
 import com.campinglog.campinglogbackserver.campinfo.entity.Review;
 import com.campinglog.campinglogbackserver.campinfo.repository.ReviewOfBoardRepository;
 import com.campinglog.campinglogbackserver.campinfo.repository.ReviewRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import reactor.core.scheduler.Schedulers;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +53,58 @@ public class CampInfoServiceImpl implements CampInfoService{
             .reviewAverage(reviewOfBoard.getReviewAverage())
             .reviewCount(reviewOfBoard.getReviewCount())
             .build();
+    }
+
+    @Override
+    public Mono<List<ResponseGetBoardReviewRank>> getBoardReviewRank(int limit) {
+        Pageable pageable = PageRequest.of(
+            0,
+            limit,
+            Sort.by(Sort.Direction.DESC, "reviewAverage")
+                .and(Sort.by(Sort.Direction.DESC, "id"))
+        );
+
+        //동기 처리(block())
+//        List<ResponseGetBoardReviewRank> ranks = reviewOfBoardRepository.findAllByReviewAverageIsNotNull(pageable)
+//            .stream()
+//            .map(rank -> ResponseGetBoardReviewRank.builder()
+//                .reviewAverage(rank.getReviewAverage())
+//                .mapX(rank.getMapX())
+//                .mapY(rank.getMapY())
+//                .build())
+//            .toList();
+//
+//        for (ResponseGetBoardReviewRank rank : ranks) {
+//            Mono<ResponseGetCampDetail> result = getCampDetail(rank.getMapX(), rank.getMapY());
+//            rank.setDoNm()
+//        }
+
+        return Mono.fromCallable(() ->
+            reviewOfBoardRepository.findAllByReviewAverageIsNotNull(pageable)
+                .stream()
+                .map(rank -> ResponseGetBoardReviewRank.builder()
+                    .reviewAverage(rank.getReviewAverage())
+                    .mapY(rank.getMapY())
+                    .mapX(rank.getMapX())
+                    .build())
+                .toList()
+        )
+            .subscribeOn(Schedulers.boundedElastic()) // JPA 호출 격리
+            .flatMapMany(Flux::fromIterable)
+            .flatMapSequential(rank ->    //순서 보장
+                getCampDetail(rank.getMapX(), rank.getMapY())
+                    .map(detail -> {
+                        if(detail != null) {
+                            rank.setDoNm(detail.getDoNm());
+                            rank.setSigunguNm(detail.getSigunguNm());
+                            rank.setFirstImageUrl(detail.getFirstImageUrl());
+                        }
+                        return rank;
+                    })
+                    .defaultIfEmpty(rank)
+            )
+            .collectList();
+
     }
 
     @Override
@@ -120,21 +182,46 @@ public class CampInfoServiceImpl implements CampInfoService{
     }
 
     @Override
-    public List<ResponseGetReviewList> getReviewList(String mapX, String mapY) {
-        List<ResponseGetReviewList> list = new ArrayList<>();
-        List<Review> reviews = reviewRepository.findByMapXAndMapY(mapX, mapY);
-        for(Review review : reviews) {
-            ResponseGetReviewList reviewUnit = ResponseGetReviewList.builder()
+    public ResponseGetReviewListPage getReviewList(String mapX, String mapY, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "postAt"));
+        Page<Review> reviews = reviewRepository.findByMapXAndMapY(mapX, mapY, pageable);
+
+        List<ResponseGetReviewList> content = reviews.getContent().stream()
+            .map(review -> ResponseGetReviewList.builder()
                 .reviewImage(review.getReviewImage())
                 .reviewContent(review.getReviewContent())
                 .reviewScore(review.getReviewScore())
                 .email(review.getEmail())
-                .postAt(review.getPostAt())
                 .setAt(review.getSetAt())
-                .build();
-            list.add(reviewUnit);
-        }
-        return list;
+                .postAt(review.getPostAt())
+                .build())
+            .toList();
+
+        return ResponseGetReviewListPage.builder()
+            .content(content)
+            .page(reviews.getNumber())
+            .size(reviews.getSize())
+            .hasNext(reviews.hasNext())
+            .totalElement(reviews.getTotalElements())
+            .totalPages(reviews.getTotalPages())
+            .build();
+
+//        List<ResponseGetReviewList> list = new ArrayList<>();
+//
+//
+//        List<Review> reviews = reviewRepository.findByMapXAndMapY(mapX, mapY);
+//        for(Review review : reviews) {
+//            ResponseGetReviewList reviewUnit = ResponseGetReviewList.builder()
+//                .reviewImage(review.getReviewImage())
+//                .reviewContent(review.getReviewContent())
+//                .reviewScore(review.getReviewScore())
+//                .email(review.getEmail())
+//                .postAt(review.getPostAt())
+//                .setAt(review.getSetAt())
+//                .build();
+//            list.add(reviewUnit);
+//        }
+//        return list;
     }
 
     @Override
