@@ -95,7 +95,5 @@ public class MemberServiceImpl implements MemberService {
     if (!matched) {
       throw new PasswordMismatchError("비밀번호가 일치하지 않습니다.");
     }
-    // 일치하면 그냥 리턴 → 컨트롤러에서 204 응답
   }
-
 }
