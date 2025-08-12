@@ -1,5 +1,6 @@
 package com.campinglog.campinglogbackserver.member.controller;
 
+import com.campinglog.campinglogbackserver.member.dto.request.*;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestChangePassword;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestUpdateMember;
@@ -59,6 +60,24 @@ public class MemberRestController {
           @AuthenticationPrincipal String email
   ) {
     return ResponseEntity.ok(memberService.getProfileImage(email));
+  }
+
+  @PostMapping("/mypage/profileImage")
+  public ResponseEntity<Map<String, String>> registerProfileImage(
+          @AuthenticationPrincipal String email,
+          @Valid @RequestBody RequestSetProfileImage request
+  ) {
+    memberService.addProfileImage(email, request);
+    return new ResponseEntity<>(HttpStatus.CREATED);
+  }
+
+  @PutMapping("/mypage/profileImage")
+  public ResponseEntity<Map<String, String>> updateProfileImage(
+          @AuthenticationPrincipal String email,
+          @Valid @RequestBody RequestSetProfileImage request
+  ) {
+    memberService.updateProfileImage(email, request);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @PostMapping("/mypage/verifyPassword")

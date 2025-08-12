@@ -2,6 +2,7 @@ package com.campinglog.campinglogbackserver.member.service;
 
 import com.campinglog.campinglogbackserver.board.entity.Board;
 import com.campinglog.campinglogbackserver.board.repository.BoardRepository;
+import com.campinglog.campinglogbackserver.member.dto.request.*;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestChangePassword;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestUpdateMember;
@@ -172,6 +173,30 @@ public class MemberServiceImpl implements MemberService {
       memberRepository.save(member);
     } catch (RuntimeException e) {
       throw new MemberCreationError("회원 정보 수정에 실패했습니다");
+    }
+  }
+
+  @Override
+  public void addProfileImage(String email, RequestSetProfileImage request) {
+    Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
+    member.setProfileImage(request.getProfileImage());
+    try {
+      memberRepository.save(member);
+    } catch (RuntimeException e) {
+      throw new MemberCreationError("프로필 이미지 등록에 실패했습니다");
+    }
+  }
+
+  @Override
+  public void updateProfileImage(String email, RequestSetProfileImage request) {
+    Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
+    member.setProfileImage(request.getProfileImage());
+    try {
+      memberRepository.save(member);
+    } catch (RuntimeException e) {
+      throw new MemberCreationError("프로필 이미지 수정에 실패했습니다.");
     }
   }
 
