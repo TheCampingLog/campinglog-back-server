@@ -3,6 +3,7 @@ package com.campinglog.campinglogbackserver.member.service;
 import com.campinglog.campinglogbackserver.board.entity.Board;
 import com.campinglog.campinglogbackserver.board.repository.BoardRepository;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestVerifyPassword;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoard;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
@@ -10,6 +11,7 @@ import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember
 import com.campinglog.campinglogbackserver.member.entity.Member;
 import com.campinglog.campinglogbackserver.member.exception.MemberCreationError;
 import com.campinglog.campinglogbackserver.member.exception.MemberNotFoundError;
+import com.campinglog.campinglogbackserver.member.exception.PasswordMismatchError;
 import com.campinglog.campinglogbackserver.member.repository.MemberRespository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -82,5 +84,16 @@ public class MemberServiceImpl implements MemberService {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
     return modelMapper.map(member, ResponseGetMemberProfileImage.class);
+  }
+
+  @Override
+  public void verifyPassword(String email, RequestVerifyPassword request) {
+    Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
+
+    boolean matched = bCryptPasswordEncoder.matches(request.getPassword(), member.getPassword());
+    if (!matched) {
+      throw new PasswordMismatchError("비밀번호가 일치하지 않습니다.");
+    }
   }
 }

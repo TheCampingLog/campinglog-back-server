@@ -1,6 +1,7 @@
 package com.campinglog.campinglogbackserver.member.controller;
 
 import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestVerifyPassword;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberProfileImage;
@@ -47,6 +48,15 @@ public class MemberRestController {
           @AuthenticationPrincipal String email
   ) {
     return ResponseEntity.ok(memberService.getProfileImage(email));
+  }
+
+  @PostMapping("/mypage/verifyPassword")
+  public ResponseEntity<Void> verifyPassword(
+          @AuthenticationPrincipal String email,
+          @Valid @RequestBody RequestVerifyPassword request
+  ) {
+    memberService.verifyPassword(email, request);
+    return ResponseEntity.noContent().build(); // 204
   }
 
   @GetMapping("/test")
