@@ -30,4 +30,16 @@ public class MemberExceptionHandler {
                                                                HttpServletRequest request) {
     return buildResponse(request, HttpStatus.BAD_REQUEST, e.getMessage());
   }
+
+  @ExceptionHandler(PasswordMismatchError.class)
+  public ResponseEntity<CustomErrorResponse> handlePwMismatch(PasswordMismatchError e,
+                                                              HttpServletRequest request) {
+    return buildResponse(request, HttpStatus.UNAUTHORIZED, e.getMessage());
+  }
+
+  @ExceptionHandler(MemberNotFoundError.class)
+  public ResponseEntity<CustomErrorResponse> handleMemberNotFound(MemberNotFoundError e,
+                                                                  HttpServletRequest request) {
+    return buildResponse(request, HttpStatus.NOT_FOUND, e.getMessage());
+  }
 }
