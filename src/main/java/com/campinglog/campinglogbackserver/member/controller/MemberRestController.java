@@ -78,7 +78,7 @@ public class MemberRestController {
           @Valid @RequestBody RequestChangePassword request
   ) {
     memberService.changePassword(email, request);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT); // 204, 바디 없음(컨벤션)
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @GetMapping("/test")
@@ -86,6 +86,5 @@ public class MemberRestController {
       @AuthenticationPrincipal String email) {
     return ResponseEntity.ok(Map.of("email", email));
   }
-
 
 }
