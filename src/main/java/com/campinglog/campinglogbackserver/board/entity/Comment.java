@@ -34,5 +34,9 @@ public class Comment {
     @Column(name = "nickname")
     private String nickname;
 
+    @Column(name = "comment_id", nullable = false, unique = true)
+    private String commentId;
 
+    @Column(name = "board_id", nullable = false)
+    private String boardId;
 }
