@@ -112,5 +112,4 @@ public class MemberRestController {
     return ResponseEntity.ok(Map.of("email", email));
   }
 
-
 }
