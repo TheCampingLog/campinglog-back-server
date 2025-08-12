@@ -90,7 +90,7 @@ public class MemberRestController {
     memberService.changePassword(email, request);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
-  
+
   @PostMapping("/mypage/verifyPassword")
   public ResponseEntity<Map<String, String>> verifyPassword(
           @AuthenticationPrincipal String email,
