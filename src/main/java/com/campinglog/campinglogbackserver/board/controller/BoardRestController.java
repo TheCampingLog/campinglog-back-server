@@ -1,9 +1,16 @@
 package com.campinglog.campinglogbackserver.board.controller;
 
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
+import com.campinglog.campinglogbackserver.board.dto.request.RequestAddComment;
+import com.campinglog.campinglogbackserver.board.dto.request.RequestAddLike;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
+
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategory;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetComments;
 import com.campinglog.campinglogbackserver.board.service.BoardService;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +63,13 @@ public class BoardRestController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
+    @GetMapping("/boards/{boardId}")
+    public ResponseEntity<ResponseGetBoardDetail> getBoardDetail(@PathVariable String boardId) {
+        ResponseGetBoardDetail result = boardService.getBoardDetail(boardId);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+
     @GetMapping("/boards/search")
     public ResponseEntity<List<ResponseGetBoardByKeyword>> searchBoards(
         @RequestParam String keyword, @RequestParam(required = false, defaultValue = "1") int page,
@@ -63,6 +77,36 @@ public class BoardRestController {
         List<ResponseGetBoardByKeyword> result = boardService.searchBoards(keyword, page, size);
         return ResponseEntity.ok(result);
     }
+
+    @PostMapping("boards/{boardId}/comment")
+    public ResponseEntity<Map<String, String>> addComment(@PathVariable String boardId, @RequestBody RequestAddComment requestAddComment){
+        requestAddComment.setBoardId(boardId);
+        boardService.addComment(boardId, requestAddComment);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @GetMapping("/boards/category")
+    public ResponseEntity<List<ResponseGetBoardByCategory>> getBoardsByCategory(@RequestParam String category, @RequestParam(required = false, defaultValue = "1")int page,
+        @RequestParam(required = false, defaultValue = "3")int size){
+        List<ResponseGetBoardByCategory> result =boardService.getBoardsByCategory(category, page, size);
+        return ResponseEntity.ok(result);
+
+    }
+
+    @GetMapping("/boards/{boardId}/comments")
+    public ResponseEntity<List<ResponseGetComments>> getComments(@PathVariable String boardId,
+        @RequestParam(required = false, defaultValue = "1") int page,
+        @RequestParam(required = false, defaultValue = "3") int size){
+        List<ResponseGetComments> result = boardService.getComments(boardId, page, size);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/boards/{boardId}/likes")
+    public ResponseEntity<Map<String, String>> addLike(@PathVariable String boardId, @RequestBody RequestAddLike requestAddLike){
+        boardService.addLike(boardId, requestAddLike);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
 
 
 }
