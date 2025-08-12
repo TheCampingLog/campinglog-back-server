@@ -1,7 +1,6 @@
 package com.campinglog.campinglogbackserver.campinfo.service;
 
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestAddReview;
-import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestGetBoardReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestRemoveReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestSetReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReview;
@@ -17,7 +16,7 @@ import com.campinglog.campinglogbackserver.campinfo.repository.ReviewOfBoardRepo
 import com.campinglog.campinglogbackserver.campinfo.repository.ReviewRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Objects;
+import jakarta.transaction.Transactional;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -98,6 +97,7 @@ public class CampInfoServiceImpl implements CampInfoService{
                             rank.setDoNm(detail.getDoNm());
                             rank.setSigunguNm(detail.getSigunguNm());
                             rank.setFirstImageUrl(detail.getFirstImageUrl());
+                            rank.setFacltNm(detail.getFacltNm());
                         }
                         return rank;
                     })
@@ -115,6 +115,7 @@ public class CampInfoServiceImpl implements CampInfoService{
             .mapY(requestAddReview.getMapY())
             .reviewContent(requestAddReview.getReviewContent())
             .reviewScore(requestAddReview.getReviewScore())
+            .reviewImage(requestAddReview.getReviewImage())
             .build();
         reviewRepository.save(review);
 
@@ -162,13 +163,18 @@ public class CampInfoServiceImpl implements CampInfoService{
                 reviewOfBoardRepository.save(reviewOfBoard);
             }
 
+            if(!review.getReviewImage().equals(requestSetReview.getNewReviewImage())) {
+                review.setReviewImage(requestSetReview.getNewReviewImage());
+                update = true;
+            }
+
             if(update) {
                 reviewRepository.save(review);
             }
         }
-
     }
 
+    @Transactional
     @Override
     public void removeReview(RequestRemoveReview requestRemoveReview) {
         Review review = Review.builder().Id(requestRemoveReview.getId()).build();
@@ -179,6 +185,10 @@ public class CampInfoServiceImpl implements CampInfoService{
         reviewOfBoard.setReviewAverage((reviewOfBoard.getReviewAverage()*reviewOfBoard.getReviewCount()-deleteReview.get().getReviewScore()) / (reviewOfBoard.getReviewCount()-1));
         reviewOfBoard.setReviewCount(reviewOfBoard.getReviewCount()-1);
         reviewOfBoardRepository.save(reviewOfBoard);
+        ReviewOfBoard checkReviewOfBoard = reviewOfBoardRepository.findByMapXAndMapY(deleteReview.get().getMapX(), deleteReview.get().getMapY());
+        if(checkReviewOfBoard.getReviewCount()==0) {
+            reviewOfBoardRepository.deleteByMapXAndMapY(deleteReview.get().getMapX(), deleteReview.get().getMapY());
+        }
     }
 
     @Override
@@ -243,7 +253,7 @@ public class CampInfoServiceImpl implements CampInfoService{
             .timeout(Duration.ofSeconds(6))
             .map(json -> {
                 List<ResponseGetCampDetail> list = parseItems(json, ResponseGetCampDetail.class);
-                if(list.isEmpty()) return null;
+                if(list.isEmpty()) throw new IllegalArgumentException("해당 게시글이 존재하지 않습니다.");
                 return list.get(0);
             });
     } //eternalApiException
@@ -260,12 +270,6 @@ public class CampInfoServiceImpl implements CampInfoService{
                 .queryParam("numOfRows", 4)
                 .build())
             .retrieve()
-//                .onStatus(HttpStatusCode::is4xxClientError, r ->
-//                        r.bodyToMono(String.class)
-//                                .flatMap(b -> Mono.error(new ExternalApiException("400: "+b))))
-//                .onStatus(HttpStatusCode::is5xxServerError, r ->
-//                        r.bodyToMono(String.class)
-//                                .flatMap(b -> Mono.error(new ExternalApiException("500: " + b))))
             .bodyToMono(String.class)
             .timeout(Duration.ofSeconds(6))
             .map(json -> {
@@ -289,12 +293,6 @@ public class CampInfoServiceImpl implements CampInfoService{
                 .queryParam("keyword", keyword)
                 .build())
             .retrieve()
-//                .onStatus(HttpStatusCode::is4xxClientError, r ->
-//                        r.bodyToMono(String.class)
-//                                .flatMap(b -> Mono.error(new ExternalApiException("400: "+b))))
-//                .onStatus(HttpStatusCode::is5xxServerError, r ->
-//                        r.bodyToMono(String.class)
-//                                .flatMap(b -> Mono.error(new ExternalApiException("500: " + b))))
             .bodyToMono(String.class)
             .timeout(Duration.ofSeconds(6))
             .map(json -> {
