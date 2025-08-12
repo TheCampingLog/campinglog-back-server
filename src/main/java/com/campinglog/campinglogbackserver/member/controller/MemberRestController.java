@@ -3,7 +3,7 @@ package com.campinglog.campinglogbackserver.member.controller;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
-import com.campinglog.campinglogbackserver.member.entity.Member;
+import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberProfileImage;
 import com.campinglog.campinglogbackserver.member.service.MemberService;
 import jakarta.validation.Valid;
 import java.util.Map;
@@ -42,6 +42,12 @@ public class MemberRestController {
     return ResponseEntity.ok(memberService.getMyBoards(email, pageNo));
   }
 
+  @GetMapping("/mypage/profileImage")
+  public ResponseEntity<ResponseGetMemberProfileImage> getProfileImage(
+          @AuthenticationPrincipal String email
+  ) {
+    return ResponseEntity.ok(memberService.getProfileImage(email));
+  }
 
   @GetMapping("/test")
   public ResponseEntity<Map<String, String>> test(

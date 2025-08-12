@@ -6,6 +6,7 @@ import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoard;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
+import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberProfileImage;
 import com.campinglog.campinglogbackserver.member.entity.Member;
 import com.campinglog.campinglogbackserver.member.exception.MemberCreationError;
 import com.campinglog.campinglogbackserver.member.exception.MemberNotFoundError;
@@ -74,5 +75,12 @@ public class MemberServiceImpl implements MemberService {
             .first(page.isFirst())
             .last(page.isLast())
             .build();
+  }
+
+  @Override
+  public ResponseGetMemberProfileImage getProfileImage(String email) {
+    Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
+    return modelMapper.map(member, ResponseGetMemberProfileImage.class);
   }
 }
