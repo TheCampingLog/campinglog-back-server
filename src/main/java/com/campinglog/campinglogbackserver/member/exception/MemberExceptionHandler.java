@@ -19,4 +19,27 @@ public class MemberExceptionHandler {
         e.getMessage());
   }
 
+  @ExceptionHandler(DuplicateEmailError.class)
+  public ResponseEntity<CustomErrorResponse> handleDupEmail(DuplicateEmailError e,
+                                                            HttpServletRequest request) {
+    return buildResponse(request, HttpStatus.BAD_REQUEST, e.getMessage());
+  }
+
+  @ExceptionHandler(DuplicateNicknameError.class)
+  public ResponseEntity<CustomErrorResponse> handleDupNickname(DuplicateNicknameError e,
+                                                               HttpServletRequest request) {
+    return buildResponse(request, HttpStatus.BAD_REQUEST, e.getMessage());
+  }
+
+  @ExceptionHandler(PasswordMismatchError.class)
+  public ResponseEntity<CustomErrorResponse> handlePwMismatch(PasswordMismatchError e,
+                                                              HttpServletRequest request) {
+    return buildResponse(request, HttpStatus.UNAUTHORIZED, e.getMessage());
+  }
+
+  @ExceptionHandler(MemberNotFoundError.class)
+  public ResponseEntity<CustomErrorResponse> handleMemberNotFound(MemberNotFoundError e,
+                                                                  HttpServletRequest request) {
+    return buildResponse(request, HttpStatus.NOT_FOUND, e.getMessage());
+  }
 }
