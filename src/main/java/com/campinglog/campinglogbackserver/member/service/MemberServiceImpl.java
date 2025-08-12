@@ -193,4 +193,16 @@ public class MemberServiceImpl implements MemberService {
     }
   }
 
+  @Override
+  public void deleteMember(String email) {
+    Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
+
+    try {
+      memberRepository.delete(member);
+    } catch (RuntimeException e) {
+      throw new MemberCreationError("회원 탈퇴에 실패했습니다.");
+    }
+  }
+
 }

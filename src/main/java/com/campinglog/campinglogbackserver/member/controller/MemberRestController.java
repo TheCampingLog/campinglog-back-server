@@ -28,6 +28,14 @@ public class MemberRestController {
     return new ResponseEntity<>(HttpStatus.CREATED);
   }
 
+  @DeleteMapping()
+  public ResponseEntity<Map<String, String>> deleteMember(
+          @AuthenticationPrincipal String email
+  ) {
+    memberService.deleteMember(email);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
   @GetMapping("/mypage")
   public ResponseEntity<ResponseGetMember> getMember(
           @AuthenticationPrincipal String email) {
