@@ -46,11 +46,11 @@ public class SecurityConfig {
             new JwtAuthenticationFilter(authenticationManager, jwtTokenProvider, jwtProperties));
     http.addFilter(new JwtBasicAuthenticationFilter(authenticationManager, jwtProperties));
     http.authorizeHttpRequests(auth ->
-            auth.requestMatchers("/h2-console/**", "/api/member", "/login").permitAll() // H2 콘솔 허용
-                    .requestMatchers(HttpMethod.GET,  "/api/member/check/**").permitAll() //회원가입시 중복값 확인
-                    .requestMatchers(HttpMethod.GET,  "/api/member/mypage").hasRole("USER")
-                    .requestMatchers(HttpMethod.POST,  "/api/member/mypage/verifyPassword").hasRole("USER") //정보수정 전 비밀번호 확인
-                    .requestMatchers("/api/member/test").hasAnyRole("ADMIN", "USER")
+            auth.requestMatchers("/h2-console/**", "/api/members", "/login").permitAll() // H2 콘솔 허용
+                    .requestMatchers(HttpMethod.GET,  "/api/members/**-availability/**").permitAll() //회원가입시 중복값 확인
+                    .requestMatchers(HttpMethod.GET,  "/api/members/mypage").hasRole("USER") //사용자가 마이페이지 접근가능
+                    .requestMatchers(HttpMethod.POST,  "/api/members/mypage/verifyPassword").hasRole("USER") //정보수정 전 비밀번호 확인
+                    .requestMatchers("/api/members/test").hasAnyRole("ADMIN", "USER")
                     .anyRequest().hasAnyRole("ADMIN", "USER"));
 
     return http.build();
