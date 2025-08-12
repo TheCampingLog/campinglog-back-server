@@ -1,6 +1,10 @@
 package com.campinglog.campinglogbackserver.member.controller;
 
 import com.campinglog.campinglogbackserver.member.dto.request.*;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestChangePassword;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestUpdateMember;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestVerifyPassword;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberProfileImage;
@@ -15,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/member")
+@RequestMapping("/api/members")
 public class MemberRestController {
 
   private final MemberService memberService;
@@ -28,7 +32,7 @@ public class MemberRestController {
     return new ResponseEntity<>(HttpStatus.CREATED);
   }
 
-  @DeleteMapping()
+  @DeleteMapping
   public ResponseEntity<Map<String, String>> deleteMember(
           @AuthenticationPrincipal String email
   ) {
@@ -39,43 +43,35 @@ public class MemberRestController {
   @GetMapping("/mypage")
   public ResponseEntity<ResponseGetMember> getMember(
           @AuthenticationPrincipal String email) {
-    return ResponseEntity.ok(memberService.getMemberByEmail(email));
+    return ResponseEntity.ok(memberService.getMember(email));
   }
 
   @PutMapping("/mypage")
-  public ResponseEntity<Map<String, String>> updateMember(
+  public ResponseEntity<Map<String, String>> setMember(
           @AuthenticationPrincipal String email,
           @Valid @RequestBody RequestUpdateMember request
   ) {
-    memberService.updateMember(email, request);
+    memberService.setMember(email, request);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @GetMapping("/mypage/boards")
-  public ResponseEntity<ResponseGetMemberBoardList> getMyBoards(
+  public ResponseEntity<ResponseGetMemberBoardList> getBoards(
           @AuthenticationPrincipal String email,
           @RequestParam(name = "pageNo", defaultValue = "1") int pageNo
   ) {
-    return ResponseEntity.ok(memberService.getMyBoards(email, pageNo));
+    return ResponseEntity.ok(memberService.getBoards(email, pageNo));
   }
 
-  @PutMapping("/mypage/grade")
-  public ResponseEntity<Map<String, String>> refreshMemberGrade(
-          @AuthenticationPrincipal String email
-  ) {
-    memberService.updateMemberGrade(email);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT); // 팀 컨벤션: 204, 바디 없음
-  }
-
-  @GetMapping("/mypage/profileImage")
+  @GetMapping("/mypage/profile-image")
   public ResponseEntity<ResponseGetMemberProfileImage> getProfileImage(
           @AuthenticationPrincipal String email
   ) {
     return ResponseEntity.ok(memberService.getProfileImage(email));
   }
 
-  @PostMapping("/mypage/profileImage")
-  public ResponseEntity<Map<String, String>> registerProfileImage(
+  @PostMapping("/mypage/profile-image")
+  public ResponseEntity<Map<String, String>> addProfileImage(
           @AuthenticationPrincipal String email,
           @Valid @RequestBody RequestSetProfileImage request
   ) {
@@ -83,50 +79,49 @@ public class MemberRestController {
     return new ResponseEntity<>(HttpStatus.CREATED);
   }
 
-  @PutMapping("/mypage/profileImage")
-  public ResponseEntity<Map<String, String>> updateProfileImage(
+  @PutMapping("/mypage/profile-image")
+  public ResponseEntity<Map<String, String>> setProfileImage(
           @AuthenticationPrincipal String email,
           @Valid @RequestBody RequestSetProfileImage request
   ) {
-    memberService.updateProfileImage(email, request);
+    memberService.setProfileImage(email, request);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
-  @PostMapping("/mypage/verifyPassword")
+  @PutMapping("/mypage/password")
+  public ResponseEntity<Map<String, String>> setPassword(
+          @AuthenticationPrincipal String email,
+          @Valid @RequestBody RequestChangePassword request
+  ) {
+    memberService.setPassword(email, request);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @PostMapping("/mypage/password/verify")
   public ResponseEntity<Map<String, String>> verifyPassword(
           @AuthenticationPrincipal String email,
           @Valid @RequestBody RequestVerifyPassword request
   ) {
     memberService.verifyPassword(email, request);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 
-  @GetMapping("/check/email")
-  public ResponseEntity<Map<String, String>> checkEmail(@RequestParam String email) {
-    memberService.assertEmailAvailable(email);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  @GetMapping("/email-availability")
+  public ResponseEntity<Map<String, String>> checkEmailAvailable(@RequestParam String email) {
+    memberService.checkEmailAvailable(email);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 
-  @GetMapping("/check/nickname")
-  public ResponseEntity<Map<String, String>> checkNickname(@RequestParam String nickname) {
-    memberService.assertNicknameAvailable(nickname);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  @GetMapping("/nickname-availability")
+  public ResponseEntity<Map<String, String>> checkNicknameAvailable(@RequestParam String nickname) {
+    memberService.checkNicknameAvailable(nickname);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
-
-  @PutMapping("/mypage/password")
-  public ResponseEntity<Map<String, String>> changePassword(
-          @AuthenticationPrincipal String email,
-          @Valid @RequestBody RequestChangePassword request
-  ) {
-    memberService.changePassword(email, request);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-  }
-
+  
   @GetMapping("/test")
   public ResponseEntity<Map<String, String>> test(
       @AuthenticationPrincipal String email) {
     return ResponseEntity.ok(Map.of("email", email));
   }
-
 
 }

@@ -3,12 +3,19 @@ package com.campinglog.campinglogbackserver.member.service;
 import com.campinglog.campinglogbackserver.board.entity.Board;
 import com.campinglog.campinglogbackserver.board.repository.BoardRepository;
 import com.campinglog.campinglogbackserver.member.dto.request.*;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestChangePassword;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestUpdateMember;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestVerifyPassword;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoard;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberProfileImage;
 import com.campinglog.campinglogbackserver.member.entity.Member;
 import com.campinglog.campinglogbackserver.member.exception.*;
+import com.campinglog.campinglogbackserver.member.exception.MemberCreationError;
+import com.campinglog.campinglogbackserver.member.exception.MemberNotFoundError;
+import com.campinglog.campinglogbackserver.member.exception.PasswordMismatchError;
 import com.campinglog.campinglogbackserver.member.repository.MemberRespository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -48,14 +55,14 @@ public class MemberServiceImpl implements MemberService {
 
   @Override
   @Transactional
-  public ResponseGetMember getMemberByEmail(String email) {
+  public ResponseGetMember getMember(String email) {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
     return modelMapper.map(member, ResponseGetMember.class);
   }
 
   @Override
-  public ResponseGetMemberBoardList getMyBoards(String email, int pageNo) {
+  public ResponseGetMemberBoardList getBoards(String email, int pageNo) {
     int pageIndex = Math.max(pageNo - 1, 0); // 1-based → 0-based
     PageRequest pageable = PageRequest.of(pageIndex, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
 
@@ -95,14 +102,14 @@ public class MemberServiceImpl implements MemberService {
   }
 
   @Override
-  public void assertEmailAvailable(String email) {
+  public void checkEmailAvailable(String email) {
     if (memberRepository.existsByEmail(email)) {
       throw new DuplicateEmailError("이미 사용 중인 이메일입니다.");
     }
   }
 
   @Override
-  public void assertNicknameAvailable(String nickname) {
+  public void checkNicknameAvailable(String nickname) {
     if (memberRepository.existsByNickname(nickname)) {
       throw new DuplicateNicknameError("이미 사용 중인 닉네임입니다.");
     }
@@ -110,7 +117,7 @@ public class MemberServiceImpl implements MemberService {
 
   @Override
   @Transactional
-  public void changePassword(String email, RequestChangePassword request) {
+  public void setPassword(String email, RequestChangePassword request) {
     // 1) 회원 조회
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
@@ -132,7 +139,7 @@ public class MemberServiceImpl implements MemberService {
   }
 
   @Override
-  public void updateMember(String email, RequestUpdateMember request) {
+  public void setMember(String email, RequestUpdateMember request) {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
 
@@ -182,7 +189,7 @@ public class MemberServiceImpl implements MemberService {
   }
 
   @Override
-  public void updateProfileImage(String email, RequestSetProfileImage request) {
+  public void setProfileImage(String email, RequestSetProfileImage request) {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
     member.setProfileImage(request.getProfileImage());

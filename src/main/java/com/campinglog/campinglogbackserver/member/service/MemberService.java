@@ -1,6 +1,10 @@
 package com.campinglog.campinglogbackserver.member.service;
 
 import com.campinglog.campinglogbackserver.member.dto.request.*;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestChangePassword;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestUpdateMember;
+import com.campinglog.campinglogbackserver.member.dto.request.RequestVerifyPassword;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberProfileImage;
@@ -9,23 +13,19 @@ import jakarta.validation.Valid;
 public interface MemberService {
 
   public void addMember(RequestAddMember requestAddMember);
-  ResponseGetMember getMemberByEmail(String email);
-  ResponseGetMemberBoardList getMyBoards(String email, int pageNo);
-  ResponseGetMemberProfileImage getProfileImage(String email);
-  void verifyPassword(String email, RequestVerifyPassword request);
+  public void addProfileImage(String email, @Valid RequestSetProfileImage request);
 
-  void assertEmailAvailable(String email);
-  void assertNicknameAvailable(String nickname);
+  public ResponseGetMember getMember(String email);
+  public ResponseGetMemberBoardList getBoards(String email, int pageNo);
+  public ResponseGetMemberProfileImage getProfileImage(String email);
 
-  void changePassword(String email, @Valid RequestChangePassword request);
+  public void setPassword(String email, @Valid RequestChangePassword request);
+  public void setMember(String email, @Valid RequestUpdateMember request);
+  public void setProfileImage(String email, @Valid RequestSetProfileImage request);
 
-  void updateMember(String email, @Valid RequestUpdateMember request);
+  public void deleteMember(String email);
 
-  void addProfileImage(String email, @Valid RequestSetProfileImage request);
-
-  void updateProfileImage(String email, @Valid RequestSetProfileImage request);
-
-  void deleteMember(String email);
-
-  void updateMemberGrade(String email);
+  public void checkEmailAvailable(String email);
+  public void checkNicknameAvailable(String nickname);
+  public void verifyPassword(String email, RequestVerifyPassword request);
 }
