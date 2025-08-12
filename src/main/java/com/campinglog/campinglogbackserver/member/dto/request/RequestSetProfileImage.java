@@ -1,5 +1,6 @@
 package com.campinglog.campinglogbackserver.member.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,6 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RequestSetProfileImage {
-    //@NotBlank(message = "profileImage(URL)는 필수입니다.")
+    @NotBlank(message = "profileImage(URL)는 필수입니다.")
     private String profileImage;
 }
