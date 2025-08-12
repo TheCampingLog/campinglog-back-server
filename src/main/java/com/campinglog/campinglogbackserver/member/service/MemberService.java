@@ -19,17 +19,8 @@ public interface MemberService {
   void verifyPassword(String email, RequestVerifyPassword request);
   void assertEmailAvailable(String email);
   void assertNicknameAvailable(String nickname);
-  void assertEmailAvailable(String email);
-  void assertNicknameAvailable(String nickname);
-  void changePassword(String email, @Valid RequestChangePassword request);
-  void updateMember(String email, @Valid RequestUpdateMember request);
-  void assertEmailAvailable(String email);
-  void assertNicknameAvailable(String nickname);
   void changePassword(String email, @Valid RequestChangePassword request);
   void updateMember(String email, @Valid RequestUpdateMember request);
   void addProfileImage(String email, @Valid RequestSetProfileImage request);
   void updateProfileImage(String email, @Valid RequestSetProfileImage request);
-  void assertEmailAvailable(String email);
-  void assertNicknameAvailable(String nickname);
-  void changePassword(String email, @Valid RequestChangePassword request);
-}
+  }
