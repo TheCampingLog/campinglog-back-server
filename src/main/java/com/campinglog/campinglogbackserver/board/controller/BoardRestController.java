@@ -11,10 +11,12 @@ import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardBy
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetComments;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetLike;
 import com.campinglog.campinglogbackserver.board.service.BoardService;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -105,6 +107,13 @@ public class BoardRestController {
     public ResponseEntity<Map<String, String>> addLike(@PathVariable String boardId, @RequestBody RequestAddLike requestAddLike){
         boardService.addLike(boardId, requestAddLike);
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @GetMapping("/boards/{boardId}/likes")
+    public ResponseEntity<ResponseGetLike> getLikes(@PathVariable String boardId){
+        ResponseGetLike result = boardService.getLikes(boardId);
+        return ResponseEntity.ok(result);
+
     }
 
 
