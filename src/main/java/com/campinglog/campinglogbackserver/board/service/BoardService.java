@@ -11,6 +11,7 @@ import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardBy
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetComments;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetLike;
 import java.util.List;
 
 public interface BoardService {
@@ -34,5 +35,7 @@ public interface BoardService {
     void addLike(String boardId, RequestAddLike requestAddLike);
 
     List<ResponseGetBoardByCategory> getBoardsByCategory(String category, int page, int size);
+
+    ResponseGetLike getLikes(String boardId);
 
 }

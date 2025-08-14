@@ -9,6 +9,7 @@ import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDe
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetComments;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetLike;
 import com.campinglog.campinglogbackserver.board.entity.Board;
 import com.campinglog.campinglogbackserver.board.entity.Comment;
 import com.campinglog.campinglogbackserver.board.entity.Like;
@@ -196,5 +197,17 @@ public class BoardServiceImpl implements BoardService {
                 return response;
             })
             .collect(Collectors.toList());
+    }
+
+    @Override
+    public ResponseGetLike getLikes(String boardId) {
+        Board board = boardRepository.findByBoardId(boardId)
+            .orElseThrow(() -> new EntityNotFoundException(
+                "해당 boardId로 게시글을 찾을 수 없습니다. boardId=" + boardId));
+        ResponseGetLike response = modelMapper.map(board, ResponseGetLike.class);
+        response.setBoardId(boardId);
+        response.setLikeCount(board.getLikeCount());
+        return response;
+
     }
 }
