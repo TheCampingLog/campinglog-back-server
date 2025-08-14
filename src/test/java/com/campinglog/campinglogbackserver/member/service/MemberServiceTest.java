@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
 import com.campinglog.campinglogbackserver.member.entity.Member;
-import com.campinglog.campinglogbackserver.member.repository.MemberRespository;
+import com.campinglog.campinglogbackserver.member.repository.MemberRepository;
 import java.time.LocalDate;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +32,7 @@ class MemberServiceTest {
   private BCryptPasswordEncoder passwordEncoder;
 
   @Autowired
-  private MemberRespository memberRespository;
+  private MemberRepository memberRepository;
 
   @Test
   @Order(1)
@@ -49,7 +49,7 @@ class MemberServiceTest {
 
     // when
     memberService.addMember(requestAddMember);
-    Optional<Member> resultMember = memberRespository.findByEmail(requestAddMember.getEmail());
+    Optional<Member> resultMember = memberRepository.findByEmail(requestAddMember.getEmail());
 
     // then
     assertThat(requestAddMember.getPassword()).isNotEqualTo(resultMember.get().getPassword());

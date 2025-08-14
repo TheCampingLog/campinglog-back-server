@@ -1,6 +1,6 @@
 package com.campinglog.campinglogbackserver.config;
 
-import com.campinglog.campinglogbackserver.member.repository.MemberRespository;
+import com.campinglog.campinglogbackserver.member.repository.MemberRepository;
 import com.campinglog.campinglogbackserver.security.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -30,7 +30,7 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                 AuthenticationManager authenticationManager, MemberRespository memberRespository,
+                                                 AuthenticationManager authenticationManager, MemberRepository memberRepository,
                                                  CorsFilter corsFilter, CustomUserDetailsService customUserDetailsService,
                                                  JwtTokenProvider jwtTokenProvider) throws Exception {
 
@@ -50,8 +50,10 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET,  "/api/members/**-availability/**").permitAll() //회원가입시 중복값 확인
                     .requestMatchers(HttpMethod.GET,  "/api/members/mypage").hasRole("USER") //사용자가 마이페이지 접근가능
                     .requestMatchers(HttpMethod.POST,  "/api/members/mypage/verifyPassword").hasRole("USER") //정보수정 전 비밀번호 확인
-                    .requestMatchers("/api/members/test").hasAnyRole("ADMIN", "USER")
-                    .anyRequest().hasAnyRole("ADMIN", "USER"));
+                    .requestMatchers(HttpMethod.PUT,  "/api/members/grade").permitAll()
+                    .requestMatchers("/api/boards").permitAll()
+                    .requestMatchers("/api/members/test").hasAnyRole( "USER")
+                    .anyRequest().hasAnyRole("USER"));
 
     return http.build();
   }

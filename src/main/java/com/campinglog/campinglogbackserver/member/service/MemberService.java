@@ -28,4 +28,6 @@ public interface MemberService {
   public void checkEmailAvailable(String email);
   public void checkNicknameAvailable(String nickname);
   public void verifyPassword(String email, RequestVerifyPassword request);
+
+  public int updateGradeWeekly();
 }

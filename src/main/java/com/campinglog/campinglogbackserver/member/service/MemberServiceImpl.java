@@ -2,48 +2,46 @@ package com.campinglog.campinglogbackserver.member.service;
 
 import com.campinglog.campinglogbackserver.board.entity.Board;
 import com.campinglog.campinglogbackserver.board.repository.BoardRepository;
+import com.campinglog.campinglogbackserver.common.dto.MemberLikeSummary;
 import com.campinglog.campinglogbackserver.member.dto.request.*;
-import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
-import com.campinglog.campinglogbackserver.member.dto.request.RequestChangePassword;
-import com.campinglog.campinglogbackserver.member.dto.request.RequestUpdateMember;
-import com.campinglog.campinglogbackserver.member.dto.request.RequestVerifyPassword;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoard;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberProfileImage;
 import com.campinglog.campinglogbackserver.member.entity.Member;
 import com.campinglog.campinglogbackserver.member.exception.*;
-import com.campinglog.campinglogbackserver.member.exception.MemberCreationError;
-import com.campinglog.campinglogbackserver.member.exception.MemberNotFoundError;
-import com.campinglog.campinglogbackserver.member.exception.PasswordMismatchError;
-import com.campinglog.campinglogbackserver.member.repository.MemberRespository;
-import jakarta.transaction.Transactional;
+import com.campinglog.campinglogbackserver.member.repository.MemberRepository; // ← 오타 수정
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // ← Spring 트랜잭션
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MemberServiceImpl implements MemberService {
 
-  private final MemberRespository memberRepository;
+  private final MemberRepository memberRepository;          // ← 이름 수정
   private final BCryptPasswordEncoder bCryptPasswordEncoder;
   private final ModelMapper modelMapper;                    // 주입받아 재사용
+  private final BoardRepository boardRepository;            // @OneToMany 미사용
   private static final int PAGE_SIZE = 4;
-  private final BoardRepository boardRepository; //@OneToMany 사용하지 않고
 
   @Override
   public void addMember(RequestAddMember requestAddMember) {
-    Member member = new ModelMapper().map(requestAddMember, Member.class);
+    // 주입 받은 modelMapper 사용
+    Member member = modelMapper.map(requestAddMember, Member.class);
     String encodedPassword = bCryptPasswordEncoder.encode(requestAddMember.getPassword());
-
     member.setPassword(encodedPassword);
 
     try {
@@ -54,7 +52,7 @@ public class MemberServiceImpl implements MemberService {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public ResponseGetMember getMember(String email) {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
@@ -62,11 +60,12 @@ public class MemberServiceImpl implements MemberService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public ResponseGetMemberBoardList getBoards(String email, int pageNo) {
     int pageIndex = Math.max(pageNo - 1, 0); // 1-based → 0-based
     PageRequest pageable = PageRequest.of(pageIndex, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-    Page<Board> page = boardRepository.findByEmail(email, pageable);
+    Page<Board> page = boardRepository.findByMemberEmail(email, pageable);
 
     List<ResponseGetMemberBoard> items = page.getContent().stream()
             .map(board -> modelMapper.map(board, ResponseGetMemberBoard.class))
@@ -84,6 +83,7 @@ public class MemberServiceImpl implements MemberService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public ResponseGetMemberProfileImage getProfileImage(String email) {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
@@ -91,6 +91,7 @@ public class MemberServiceImpl implements MemberService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public void verifyPassword(String email, RequestVerifyPassword request) {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
@@ -102,6 +103,51 @@ public class MemberServiceImpl implements MemberService {
   }
 
   @Override
+  @Transactional
+  public int updateGradeWeekly() {
+    List<MemberLikeSummary> rows = boardRepository.sumLikesGroupByMember();
+
+    if (rows.isEmpty()) {
+      log.info("No boards found. No grade changes.");
+      return 0;
+    }
+
+    // 필요하면 DTO로 변환
+    List<MemberLikeSummary> totals = rows.stream()
+            .map(p -> new MemberLikeSummary(p.getMemberId(),
+                    p.getTotalLikes() == null ? 0L : p.getTotalLikes()))
+            .toList();
+
+    // PK = email(String)
+    List<String> memberIds = totals.stream().map(MemberLikeSummary::getMemberId).toList();
+    Map<String, Member> memberMap = memberRepository.findAllById(memberIds).stream()
+            .collect(Collectors.toMap(Member::getEmail, m -> m));
+
+    List<Member> changedMembers = new ArrayList<>();
+    for (MemberLikeSummary t : totals) {
+      Member m = memberMap.get(t.getMemberId());
+      if (m == null) continue;
+      Member.MemberGrade newGrade = decideByLikes(t.getTotalLikes());
+      if (m.getMemberGrade() != newGrade) {
+        m.setMemberGrade(newGrade);
+        changedMembers.add(m);
+      }
+    }
+    if (!changedMembers.isEmpty()) memberRepository.saveAll(changedMembers);
+    log.info("Weekly promotion executed. changed={}", changedMembers.size());
+    return changedMembers.size();
+  }
+
+  /** 등급 정책: GREEN < BLUE < RED < BLACK  (임계값: 20/50/100) */
+  private Member.MemberGrade decideByLikes(long totalLikes) {
+    if (totalLikes >= 100) return Member.MemberGrade.BLACK;
+    if (totalLikes >= 50)  return Member.MemberGrade.RED;
+    if (totalLikes >= 20)  return Member.MemberGrade.BLUE;
+    return Member.MemberGrade.GREEN;
+  }
+
+  @Override
+  @Transactional(readOnly = true)
   public void checkEmailAvailable(String email) {
     if (memberRepository.existsByEmail(email)) {
       throw new DuplicateEmailError("이미 사용 중인 이메일입니다.");
@@ -109,6 +155,7 @@ public class MemberServiceImpl implements MemberService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public void checkNicknameAvailable(String nickname) {
     if (memberRepository.existsByNickname(nickname)) {
       throw new DuplicateNicknameError("이미 사용 중인 닉네임입니다.");
@@ -118,18 +165,17 @@ public class MemberServiceImpl implements MemberService {
   @Override
   @Transactional
   public void setPassword(String email, RequestChangePassword request) {
-    // 1) 회원 조회
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
+
     boolean matches = bCryptPasswordEncoder.matches(request.getCurrentPassword(), member.getPassword());
     if (!matches) {
       throw new PasswordMismatchError("현재 비밀번호가 일치하지 않습니다.");
     }
-    // 3) 새 비밀번호가 기존과 동일한지 방어 (선택)
     if (bCryptPasswordEncoder.matches(request.getNewPassword(), member.getPassword())) {
       throw new IllegalArgumentException("새 비밀번호가 기존 비밀번호와 동일합니다.");
     }
-    // 4) 변경 및 저장
+
     member.setPassword(bCryptPasswordEncoder.encode(request.getNewPassword()));
     try {
       memberRepository.save(member);
@@ -139,6 +185,7 @@ public class MemberServiceImpl implements MemberService {
   }
 
   @Override
+  @Transactional
   public void setMember(String email, RequestUpdateMember request) {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
@@ -159,16 +206,15 @@ public class MemberServiceImpl implements MemberService {
       member.setPhoneNumber(request.getPhoneNumber());
     }
 
-    // 3) 그 외 필드 널 스킵 매핑
+    // 3) 널 스킵 매핑
     boolean prevSkip = modelMapper.getConfiguration().isSkipNullEnabled();
     modelMapper.getConfiguration().setSkipNullEnabled(true);
     try {
-      modelMapper.map(request, member); // null인 값은 덮어쓰지 않음
+      modelMapper.map(request, member);
     } finally {
       modelMapper.getConfiguration().setSkipNullEnabled(prevSkip);
     }
 
-    // 4) 저장 (실패 시 래핑)
     try {
       memberRepository.save(member);
     } catch (RuntimeException e) {
@@ -177,6 +223,7 @@ public class MemberServiceImpl implements MemberService {
   }
 
   @Override
+  @Transactional
   public void addProfileImage(String email, RequestSetProfileImage request) {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
@@ -189,6 +236,7 @@ public class MemberServiceImpl implements MemberService {
   }
 
   @Override
+  @Transactional
   public void setProfileImage(String email, RequestSetProfileImage request) {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
@@ -201,6 +249,7 @@ public class MemberServiceImpl implements MemberService {
   }
 
   @Override
+  @Transactional
   public void deleteMember(String email) {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
@@ -211,35 +260,4 @@ public class MemberServiceImpl implements MemberService {
       throw new MemberCreationError("회원 탈퇴에 실패했습니다.");
     }
   }
-
-  @Override
-  @Transactional
-  public void updateMemberGrade(String email) {
-    Member member = memberRepository.findByEmail(email)
-            .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
-    // 1) 내가 쓴 글의 총 좋아요 합계
-    long totalLikes = boardRepository.sumLikeCountByEmail(email);
-    // 2) 합계 → 등급 매핑
-    Member.MemberGrade newGrade;
-    if (totalLikes >= 100) {
-      newGrade = Member.MemberGrade.BLACK;
-    } else if (totalLikes >= 50) {
-      newGrade = Member.MemberGrade.RED;
-    } else if (totalLikes >= 20) {
-      newGrade = Member.MemberGrade.BLUE;
-    } else {
-      newGrade = Member.MemberGrade.GREEN;
-    }
-
-    // 3) 변경될 때만 업데이트
-    if (member.getMemberGrade() != newGrade) {
-      member.setMemberGrade(newGrade);
-      try {
-        memberRepository.save(member);
-      } catch (RuntimeException e) {
-        throw new MemberCreationError("회원 등급 갱신에 실패했습니다");
-      }
-    }
-  }
-
 }
