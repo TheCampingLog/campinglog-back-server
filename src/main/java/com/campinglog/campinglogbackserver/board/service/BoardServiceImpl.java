@@ -5,8 +5,8 @@ import com.campinglog.campinglogbackserver.board.dto.request.RequestAddComment;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddLike;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategory;
-import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetComments;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetLike;
@@ -16,7 +16,6 @@ import com.campinglog.campinglogbackserver.board.entity.Like;
 import com.campinglog.campinglogbackserver.board.repository.BoardRepository;
 import com.campinglog.campinglogbackserver.board.repository.CommentRepository;
 import com.campinglog.campinglogbackserver.board.repository.LikeRepository;
-
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -132,7 +131,7 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public List<ResponseGetComments> getComments(String boardId, int page, int size) {
-      Board board = boardRepository.findByBoardId(boardId)
+        Board board = boardRepository.findByBoardId(boardId)
             .orElseThrow(() -> new EntityNotFoundException(
                 "해당 boardId로 게시글을 찾을 수 없습니다. boardId=" + boardId));
 
@@ -151,7 +150,8 @@ public class BoardServiceImpl implements BoardService {
             .orElseThrow(() -> new EntityNotFoundException(
                 "해당 boardId로 게시글을 찾을 수 없습니다. boardId=" + boardId));
 
-        boolean alreadyLiked = likeRepository.existsByBoardIdAndEmail(boardId, requestAddLike.getEmail());
+        boolean alreadyLiked = likeRepository.existsByBoardIdAndEmail(boardId,
+            requestAddLike.getEmail());
         if (alreadyLiked) {
             throw new RuntimeException("이미 좋아요 누른 게시글");
         }
@@ -181,8 +181,8 @@ public class BoardServiceImpl implements BoardService {
 
     }
 
- 
-     @Override
+
+    @Override
     public List<ResponseGetBoardByCategory> getBoardsByCategory(String category, int page,
         int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
@@ -209,5 +209,22 @@ public class BoardServiceImpl implements BoardService {
         response.setLikeCount(board.getLikeCount());
         return response;
 
+    }
+
+    @Override
+    public void deleteLike(String boardId, String email) {
+        Board board = boardRepository.findByBoardId(boardId)
+            .orElseThrow(() -> new EntityNotFoundException(
+                "게시글을 찾을 수 없습니다. boardId=" + boardId));
+
+        Like like = likeRepository.findByBoardIdAndEmail(boardId, email)
+            .orElseThrow(() -> new RuntimeException("좋아요하지 않은 게시글입니다."));
+
+        likeRepository.delete(like);
+
+        if (board.getLikeCount() > 0) {
+            board.setLikeCount(board.getLikeCount() - 1);
+            boardRepository.save(board);
+        }
     }
 }
