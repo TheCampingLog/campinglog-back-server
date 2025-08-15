@@ -9,12 +9,15 @@ import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoar
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetMyReview;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetMyReviewWrapper;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewList;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewListPage;
 import com.campinglog.campinglogbackserver.campinfo.service.CampInfoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -23,7 +26,7 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/camp-info")
+@RequestMapping("/api/camps")
 public class CampInfoRestController {
     private final CampInfoService campInfoService;
 
@@ -32,54 +35,60 @@ public class CampInfoRestController {
         return ResponseEntity.ok((Map.of("ok", "ok")));
     }
 
-    @GetMapping("/camps/{pageNo}")
+    @GetMapping("/list/{pageNo}")
     public ResponseEntity<Mono<List<ResponseGetCampListLatest>>> getCampListLatest(@PathVariable int pageNo) {
 
         return ResponseEntity.ok(campInfoService.getCampListLatest(pageNo));
     }
 
-    @GetMapping("/camp/{mapX}/{mapY}")
+    @GetMapping("/detail/{mapX}/{mapY}")
     public ResponseEntity<Mono<ResponseGetCampDetail>> getCampDetail(@PathVariable String mapX, @PathVariable String mapY) {
         return ResponseEntity.ok(campInfoService.getCampDetail(mapX, mapY));
     }
 
-    @GetMapping("/camp/keyword/{keyword}/{pageNo}")
+    @GetMapping("/keyword/{keyword}/{pageNo}")
     public ResponseEntity<Mono<List<ResponseGetCampByKeyword>>> getCampByKeyword(@PathVariable String keyword, @PathVariable int pageNo) {
         return ResponseEntity.ok(campInfoService.getCampByKeyword(keyword, pageNo));
     }
 
-    @PostMapping("/review")
+    @PostMapping("/members/reviews")
     public ResponseEntity<Map<String, String>> addReview(@RequestBody RequestAddReview requestAddReview) {
         campInfoService.addReview(requestAddReview);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @PutMapping("/review")
+    @PutMapping("/members/reviews")
     public ResponseEntity<Map<String, String>> setReview(@RequestBody RequestSetReview requestSetReview) {
         campInfoService.setReview(requestSetReview);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @DeleteMapping("/review")
+    @DeleteMapping("/members/reviews")
     public  ResponseEntity<Map<String, String>> removeReview(@RequestBody RequestRemoveReview requestRemoveReview) {
         campInfoService.removeReview(requestRemoveReview);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/review/{mapX}/{mapY}")
+    @GetMapping("/reviews/{mapX}/{mapY}")
     public ResponseEntity<ResponseGetReviewListPage> getReviewList(@PathVariable String mapX, @PathVariable String mapY,
         @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "4") int size) {
         return ResponseEntity.ok(campInfoService.getReviewList(mapX, mapY, page, size));
     }
 
-    @GetMapping("/review/board/{mapX}/{mapY}")
+    @GetMapping("/reviews/board/{mapX}/{mapY}")
     public ResponseEntity<ResponseGetBoardReview> getBoardReview(@PathVariable String mapX, @PathVariable String mapY) {
         return ResponseEntity.ok(campInfoService.getBoardReview(mapX, mapY));
     }
 
-    @GetMapping("/review/board/rank")
+    @GetMapping("/reviews/board/rank")
     public ResponseEntity<Mono<List<ResponseGetBoardReviewRank>>> getBoardReviewRank(@RequestParam(value = "limit", defaultValue = "3") int limit) {
         return ResponseEntity.ok(campInfoService.getBoardReviewRank(limit));
+    }
+
+    @GetMapping("/members/mypage/reviews")
+    public ResponseEntity<Mono<ResponseGetMyReviewWrapper>> getMyReviews(@AuthenticationPrincipal String email, @RequestParam(name = "pageNo", defaultValue = "1") int pageNo,
+        @RequestParam(name = "size", defaultValue = "4") int size) {
+        return ResponseEntity.ok(campInfoService.getMyReviews(email, pageNo, size));
     }
 
 }
