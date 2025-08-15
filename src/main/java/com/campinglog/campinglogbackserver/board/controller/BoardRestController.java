@@ -4,6 +4,7 @@ import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddComment;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddLike;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
+import com.campinglog.campinglogbackserver.board.dto.request.RequestSetComment;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategory;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
@@ -109,6 +110,19 @@ public class BoardRestController {
         @RequestParam(required = false, defaultValue = "3") int size) {
         List<ResponseGetComments> result = boardService.getComments(boardId, page, size);
         return ResponseEntity.ok(result);
+    }
+
+    @PutMapping("/{boardId}/comments/{commentId}")
+    public ResponseEntity<Map<String, String>> updateComment(@PathVariable String boardId,
+        @PathVariable String commentId, @RequestBody RequestSetComment requestSetComment) {
+        requestSetComment.setBoardId(boardId);
+        requestSetComment.setCommentId(commentId);
+        boardService.updateComment(boardId, commentId, requestSetComment);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "댓글이 수정되었습니다.");
+        response.put("status", "success");
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{boardId}/likes")
