@@ -1,6 +1,6 @@
 package com.campinglog.campinglogbackserver.config;
 
-import com.campinglog.campinglogbackserver.member.repository.MemberRespository;
+import com.campinglog.campinglogbackserver.member.repository.MemberRepository;
 import com.campinglog.campinglogbackserver.security.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -30,7 +30,7 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                 AuthenticationManager authenticationManager, MemberRespository memberRespository,
+                                                 AuthenticationManager authenticationManager, MemberRepository memberRepository,
                                                  CorsFilter corsFilter, CustomUserDetailsService customUserDetailsService,
                                                  JwtTokenProvider jwtTokenProvider) throws Exception {
 
@@ -63,8 +63,6 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.POST,  "/api/members/mypage/verifyPassword").hasRole("USER") //정보수정 전 비밀번호 확인
                     .requestMatchers(HttpMethod.PUT,  "/api/members/grade").permitAll()
                     .requestMatchers("/api/boards").permitAll()
-                    .requestMatchers("/api/members/test").hasAnyRole( "USER")
-                    .anyRequest().hasAnyRole("USER"));
                     .requestMatchers("/api/members/test").hasAnyRole("USER")
                     .requestMatchers("/api/camps/members/**").hasRole("USER")
                     .requestMatchers("/api/camps/**").permitAll()
