@@ -50,8 +50,11 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET,  "/api/members/**-availability/**").permitAll() //회원가입시 중복값 확인
                     .requestMatchers(HttpMethod.GET,  "/api/members/mypage").hasRole("USER") //사용자가 마이페이지 접근가능
                     .requestMatchers(HttpMethod.POST,  "/api/members/mypage/verifyPassword").hasRole("USER") //정보수정 전 비밀번호 확인
-                    .requestMatchers("/api/members/test").hasAnyRole("ADMIN", "USER")
-                    .anyRequest().hasAnyRole("ADMIN", "USER"));
+                    .requestMatchers("/api/members/test").hasAnyRole("USER")
+                    .requestMatchers("/api/camps/members/**").hasRole("USER")
+                    .requestMatchers("/api/camps/**").permitAll()
+                    .requestMatchers("/error").permitAll()
+                    .anyRequest().hasAnyRole("USER"));
 
     return http.build();
   }
