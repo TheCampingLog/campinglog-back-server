@@ -8,15 +8,19 @@ import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoar
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetMyReview;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetMyReviewWrapper;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewList;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewListPage;
 import com.campinglog.campinglogbackserver.campinfo.entity.ReviewOfBoard;
 import com.campinglog.campinglogbackserver.campinfo.entity.Review;
+import com.campinglog.campinglogbackserver.campinfo.exception.NullReviewError;
 import com.campinglog.campinglogbackserver.campinfo.repository.ReviewOfBoardRepository;
 import com.campinglog.campinglogbackserver.campinfo.repository.ReviewRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +28,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -55,6 +60,51 @@ public class CampInfoServiceImpl implements CampInfoService{
     }
 
     @Override
+    public Mono<ResponseGetMyReviewWrapper> getMyReviews(String email, int pageNo, int size) {
+        Pageable pageable = PageRequest.of(pageNo-1, size, Sort.by(Direction.DESC, "postAt"));
+        return Mono.fromCallable(() -> reviewRepository.findByEmail(email, pageable))
+            .subscribeOn(Schedulers.boundedElastic())
+            .flatMap(page ->
+                Flux.fromIterable(page.getContent())
+                    .flatMapSequential(review -> getCampDetail(review.getMapX(), review.getMapY())
+                        .onErrorResume(e -> Mono.empty())
+                        .map(detail -> {
+                            return ResponseGetMyReview.builder()
+                                .reviewScore(review.getReviewScore())
+                                .reviewContent(review.getReviewContent())
+                                .mapX(review.getMapX())
+                                .mapY(review.getMapY())
+                                .postAt(review.getPostAt())
+                                .facltNm(detail.getFacltNm())
+                                .firstImageUrl(detail.getFirstImageUrl())
+                                .build();
+                        })
+                        .defaultIfEmpty(
+                            ResponseGetMyReview.builder()
+                                .reviewContent(review.getReviewContent())
+                                .reviewScore(review.getReviewScore())
+                                .mapY(review.getMapY())
+                                .mapX(review.getMapX())
+                                .postAt(review.getPostAt())
+                                .build()
+                        ),
+                        5, 32
+                    )
+                    .collectList()
+                    .map(list -> ResponseGetMyReviewWrapper.builder()
+                        .content(list)
+                        .page(page.getNumber())
+                        .size(page.getSize())
+                        .totalElements(page.getTotalElements())
+                        .totalPage(page.getTotalPages())
+                        .hasNext(page.hasNext())
+                        .build()
+                    )
+            );
+
+    }
+
+    @Override
     public Mono<List<ResponseGetBoardReviewRank>> getBoardReviewRank(int limit) {
         Pageable pageable = PageRequest.of(
             0,
@@ -62,21 +112,6 @@ public class CampInfoServiceImpl implements CampInfoService{
             Sort.by(Sort.Direction.DESC, "reviewAverage")
                 .and(Sort.by(Sort.Direction.DESC, "id"))
         );
-
-        //동기 처리(block())
-//        List<ResponseGetBoardReviewRank> ranks = reviewOfBoardRepository.findAllByReviewAverageIsNotNull(pageable)
-//            .stream()
-//            .map(rank -> ResponseGetBoardReviewRank.builder()
-//                .reviewAverage(rank.getReviewAverage())
-//                .mapX(rank.getMapX())
-//                .mapY(rank.getMapY())
-//                .build())
-//            .toList();
-//
-//        for (ResponseGetBoardReviewRank rank : ranks) {
-//            Mono<ResponseGetCampDetail> result = getCampDetail(rank.getMapX(), rank.getMapY());
-//            rank.setDoNm()
-//        }
 
         return Mono.fromCallable(() ->
             reviewOfBoardRepository.findAllByReviewAverageIsNotNull(pageable)
@@ -140,37 +175,34 @@ public class CampInfoServiceImpl implements CampInfoService{
 
     @Override
     public void setReview(RequestSetReview requestSetReview) {
-        Optional<Review> optionalReview = reviewRepository.findById(Review.builder().Id(requestSetReview.getId()).build().getId());
+        Review review = reviewRepository.findById(Review.builder().Id(requestSetReview.getId()).build().getId())
+            .orElseThrow(() -> new NullReviewError("리뷰 없음: id = " + requestSetReview.getId()));
 
         boolean update = false;
 
-        if(optionalReview.isPresent()) {
-            Review review = optionalReview.get();
+        if(!Objects.equals(review.getReviewContent(), requestSetReview.getNewReviewContent())) {
+            review.setReviewContent(requestSetReview.getNewReviewContent());
+            update = true;
+        }
 
-            if(!review.getReviewContent().equals(requestSetReview.getNewReviewContent())) {
-                review.setReviewContent(requestSetReview.getNewReviewContent());
-                update = true;
-            }
+        if(!Objects.equals(review.getReviewScore(), requestSetReview.getNewReviewScore())) {
+            double oldScore = review.getReviewScore();
+            review.setReviewScore(requestSetReview.getNewReviewScore());
+            update = true;
 
-            if(!review.getReviewScore().equals(requestSetReview.getNewReviewScore())) {
-                double oldScore = review.getReviewScore();
-                review.setReviewScore(requestSetReview.getNewReviewScore());
-                update = true;
+            ReviewOfBoard reviewOfBoard = reviewOfBoardRepository.findByMapXAndMapY(review.getMapX(), review.getMapY());
+            reviewOfBoard.setReviewAverage(((reviewOfBoard.getReviewAverage()*reviewOfBoard.getReviewCount()) + (requestSetReview.getNewReviewScore()-oldScore))
+                / reviewOfBoard.getReviewCount());
+            reviewOfBoardRepository.save(reviewOfBoard);
+        }
 
-                ReviewOfBoard reviewOfBoard = reviewOfBoardRepository.findByMapXAndMapY(review.getMapX(), review.getMapY());
-                reviewOfBoard.setReviewAverage(((reviewOfBoard.getReviewAverage()*reviewOfBoard.getReviewCount()) + (requestSetReview.getNewReviewScore()-oldScore))
-                    / reviewOfBoard.getReviewCount());
-                reviewOfBoardRepository.save(reviewOfBoard);
-            }
+        if(!Objects.equals(review.getReviewImage(),requestSetReview.getNewReviewImage())) {
+            review.setReviewImage(requestSetReview.getNewReviewImage());
+            update = true;
+        }
 
-            if(!review.getReviewImage().equals(requestSetReview.getNewReviewImage())) {
-                review.setReviewImage(requestSetReview.getNewReviewImage());
-                update = true;
-            }
-
-            if(update) {
-                reviewRepository.save(review);
-            }
+        if(update) {
+            reviewRepository.save(review);
         }
     }
 
@@ -203,6 +235,7 @@ public class CampInfoServiceImpl implements CampInfoService{
                 .reviewScore(review.getReviewScore())
                 .email(review.getEmail())
                 .setAt(review.getSetAt())
+                .nickname(review.getMember().getNickname())
                 .postAt(review.getPostAt())
                 .build())
             .toList();
@@ -216,22 +249,6 @@ public class CampInfoServiceImpl implements CampInfoService{
             .totalPages(reviews.getTotalPages())
             .build();
 
-//        List<ResponseGetReviewList> list = new ArrayList<>();
-//
-//
-//        List<Review> reviews = reviewRepository.findByMapXAndMapY(mapX, mapY);
-//        for(Review review : reviews) {
-//            ResponseGetReviewList reviewUnit = ResponseGetReviewList.builder()
-//                .reviewImage(review.getReviewImage())
-//                .reviewContent(review.getReviewContent())
-//                .reviewScore(review.getReviewScore())
-//                .email(review.getEmail())
-//                .postAt(review.getPostAt())
-//                .setAt(review.getSetAt())
-//                .build();
-//            list.add(reviewUnit);
-//        }
-//        return list;
     }
 
     @Override

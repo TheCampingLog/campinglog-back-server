@@ -1,10 +1,14 @@
 package com.campinglog.campinglogbackserver.campinfo.entity;
 
+import com.campinglog.campinglogbackserver.member.entity.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -51,4 +55,8 @@ public class Review {
   @UpdateTimestamp
   @Column(name = "set_at")
   private LocalDateTime setAt;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "email", referencedColumnName = "email", insertable = false, updatable = false, nullable = false)
+  private Member member;
 }

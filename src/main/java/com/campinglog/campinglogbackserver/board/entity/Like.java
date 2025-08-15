@@ -1,26 +1,26 @@
 package com.campinglog.campinglogbackserver.board.entity;
 
-import jakarta.persistence.Cacheable;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.campinglog.campinglogbackserver.member.entity.Member;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 @Entity
-@Data
-@Table(name = "board_like")
+@Getter
+@Setter
+@Table(name = "board_like",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_board_member_like",
+            columnNames = {"board_id", "email"})
+    })
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString(exclude = {"board", "member"})  // 순환참조 방지
+@EqualsAndHashCode(exclude = {"board", "member"})  // 순환참조 방지
 public class Like {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,17 +28,28 @@ public class Like {
     @Column(name = "like_id", nullable = false, unique = true)
     private String likeId;
 
-    @Column(name = "board_id", nullable = false)
-    private String boardId;
-
-    @Column(name = "email", nullable = false)
-    private String email;
-
-    @Column(name = "nickname")
-    private String nickname;
-
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     @ColumnDefault(value = "CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_id", referencedColumnName = "board_id", nullable = false)
+    private Board board;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "email", referencedColumnName = "email", nullable = false)
+    private Member member;
+
+    // 편의 메서드
+    public String getBoardId() {
+        return board != null ? board.getBoardId() : null;
+    }
+
+    public String getEmail() {
+        return member != null ? member.getEmail() : null;
+    }
+
+    public String getNickname() {
+        return member != null ? member.getNickname() : null;
+    }
 }

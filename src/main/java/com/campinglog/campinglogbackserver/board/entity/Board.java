@@ -1,34 +1,35 @@
 package com.campinglog.campinglogbackserver.board.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.campinglog.campinglogbackserver.member.entity.Member;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 @Entity
-@Data
+@Getter //@Data로 사용하면 문제생길수있음
+@Setter
 @Table(name = "board")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString(exclude = {"member", "comments", "likes"})  // 순환 참조 방지
+@EqualsAndHashCode(exclude = {"member", "comments", "likes"}) // 순환 참조 방지
 public class Board {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "board_id", nullable = false, unique = true)
+    private String boardId;
+
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "content", nullable = false)
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @Column(name = "category_name", nullable = false)
@@ -38,10 +39,16 @@ public class Board {
     private String boardImage;
 
     @Column(name = "view_count")
-    private int viewCount;
+    @Builder.Default
+    private int viewCount = 0;
 
     @Column(name = "like_count")
-    private int likeCount;
+    @Builder.Default
+    private int likeCount = 0;
+
+    @Column(name = "comment_count")
+    @Builder.Default
+    private int commentCount = 0;
 
     @Column(name = "rank")
     private int rank;
@@ -50,17 +57,24 @@ public class Board {
     @ColumnDefault(value = "CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
 
-    @Column(name = "email", nullable = false)
-    private String email;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "email", referencedColumnName = "email", nullable = false)
+    private Member member;
 
-    @Column(name = "board_id", nullable = false, unique = true)
-    private String boardId;
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Comment> comments = new ArrayList<>();
 
-    @Column(name = "nickname")
-    private String nickname;
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Like> likes = new ArrayList<>();
 
-    @Column(name = "comment_count")
-    private int commentCount;
+    // 편의 메서드
+    public String getEmail() {
+        return member != null ? member.getEmail() : null;
+    }
 
-
+    public String getNickname() {
+        return member != null ? member.getNickname() : null;
+    }
 }
