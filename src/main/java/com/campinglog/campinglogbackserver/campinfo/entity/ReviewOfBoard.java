@@ -25,7 +25,7 @@ public class ReviewOfBoard {
   @Column(name = "review_count", nullable = false)
   private Integer reviewCount;
 
-  @Column(name = "review_everage", nullable = false)
+  @Column(name = "review_average", nullable = false)
   private Double reviewAverage;
 
   @Column(name = "map_x", nullable = false, unique = true)

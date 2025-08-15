@@ -9,6 +9,8 @@ import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoar
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetMyReview;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetMyReviewWrapper;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewList;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewListPage;
 import reactor.core.publisher.Mono;
@@ -25,4 +27,5 @@ public interface CampInfoService {
     void removeReview(RequestRemoveReview requestRemoveReview);
     ResponseGetReviewListPage getReviewList(String mapX, String mapY, int page, int size);
     Mono<List<ResponseGetBoardReviewRank>> getBoardReviewRank(int limit);
+    Mono<ResponseGetMyReviewWrapper> getMyReviews(String email, int pageNo, int size);
 }
