@@ -4,7 +4,10 @@ import com.campinglog.campinglogbackserver.board.entity.Board;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
+import com.campinglog.campinglogbackserver.member.dto.MemberLikeSummary;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,7 +35,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
     // 회원별 좋아요 합계 (글 없는 회원도 포함하려면 LEFT JOIN으로 Member 시작)
     @Query("""
-     SELECT new com.campinglog.campinglogbackserver.common.dto.MemberLikeSummary(
+     SELECT new com.campinglog.campinglogbackserver.member.dto.MemberLikeSummary(
        m.email,
        COALESCE(SUM(b.likeCount), 0)
      )
@@ -50,4 +53,5 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
   """)
     long sumLikeCountByEmail(String email);
 
+    Page<Board> findByMemberEmail(String email, PageRequest pageable);
 }

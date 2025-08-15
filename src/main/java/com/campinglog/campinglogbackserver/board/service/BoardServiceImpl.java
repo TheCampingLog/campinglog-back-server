@@ -18,7 +18,7 @@ import com.campinglog.campinglogbackserver.board.repository.BoardRepository;
 import com.campinglog.campinglogbackserver.board.repository.CommentRepository;
 import com.campinglog.campinglogbackserver.board.repository.LikeRepository;
 import com.campinglog.campinglogbackserver.member.entity.Member;
-import com.campinglog.campinglogbackserver.member.repository.MemberRespository;
+import com.campinglog.campinglogbackserver.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
@@ -41,7 +41,7 @@ public class BoardServiceImpl implements BoardService {
     private final BoardRepository boardRepository;
     private final CommentRepository commentRepository;
     private final LikeRepository likeRepository;
-    private final MemberRespository memberRepository;
+    private final MemberRepository memberRepository;
     private final ModelMapper modelMapper;
 
     @Override

@@ -1,13 +1,12 @@
 package com.campinglog.campinglogbackserver.member.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import com.campinglog.campinglogbackserver.board.entity.Board;
+import jakarta.persistence.*;
+
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -71,5 +70,7 @@ public class Member {
   public enum MemberGrade {
     GREEN, BLUE, RED, BLACK
   }
+  @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Board> boards = new ArrayList<>();
 
 }
