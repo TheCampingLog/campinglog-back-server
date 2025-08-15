@@ -4,6 +4,7 @@ import com.campinglog.campinglogbackserver.board.dto.request.RequestAddBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddComment;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddLike;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
+import com.campinglog.campinglogbackserver.board.dto.request.RequestSetComment;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategory;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
@@ -142,6 +143,29 @@ public class BoardServiceImpl implements BoardService {
 
         return comments.stream().map(comment -> modelMapper.map(comment, ResponseGetComments.class))
             .collect(Collectors.toList());
+    }
+
+    @Override
+    public void updateComment(String boardId, String commentId,
+        RequestSetComment requestSetComment) {
+        Board board = boardRepository.findByBoardId(boardId)
+            .orElseThrow(() -> new EntityNotFoundException(
+                "게시글을 찾을 수 없습니다. boardId=" + boardId));
+
+        Comment comment = commentRepository.findByCommentId(commentId)
+            .orElseThrow(() -> new EntityNotFoundException(
+                "댓글을 찾을 수 없습니다. commentId=" + commentId));
+
+        if (!comment.getBoardId().equals(boardId)) {
+            throw new RuntimeException("해당 게시글의 댓글이 아닙니다.");
+        }
+
+        commentRepository.delete(comment);
+
+        if (board.getCommentCount() > 0) {
+            board.setCommentCount(board.getCommentCount() - 1);
+            boardRepository.save(board);
+        }
     }
 
     @Override
