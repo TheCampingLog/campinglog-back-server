@@ -20,7 +20,7 @@ public class RequestAddComment {
     @Size(min = 1, max = 1000, message = "댓글은 1자 이상 1000자 이하여야 합니다.")
     private String content;
 
-    @NotBlank(message = "닉네임은 필수입니다.")
-    private String nickname;
+    @NotBlank(message = "이메일은 필수입니다.")
+    private String email;
 
 }
