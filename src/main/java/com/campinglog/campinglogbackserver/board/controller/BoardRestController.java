@@ -12,6 +12,7 @@ import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRa
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetComments;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetLike;
 import com.campinglog.campinglogbackserver.board.service.BoardService;
+import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/boards")
+@Validated
 public class BoardRestController {
 
     private final BoardService boardService;
@@ -39,7 +42,7 @@ public class BoardRestController {
     @PostMapping
     public ResponseEntity<Map<String, String>> addBoard(
         @AuthenticationPrincipal String email,
-        @RequestBody RequestAddBoard requestAddBoard) {
+        @Valid @RequestBody RequestAddBoard requestAddBoard) {
         requestAddBoard.setEmail(email);
         boardService.addBoard(requestAddBoard);
         Map<String, String> response = new HashMap<>();
@@ -50,7 +53,7 @@ public class BoardRestController {
     @PutMapping("/{boardId}")
     public ResponseEntity<Map<String, String>> setBoard(
         @AuthenticationPrincipal String email, @PathVariable String boardId,
-        @RequestBody RequestSetBoard requestsetBoard) {
+        @Valid @RequestBody RequestSetBoard requestsetBoard) {
         requestsetBoard.setBoardId(boardId);
         requestsetBoard.setEmail(email);
         boardService.setBoard(requestsetBoard);
@@ -90,7 +93,7 @@ public class BoardRestController {
     @PostMapping("/{boardId}/comment")
     public ResponseEntity<Map<String, String>> addComment(
         @AuthenticationPrincipal String email, @PathVariable String boardId,
-        @RequestBody RequestAddComment requestAddComment) {
+        @Valid @RequestBody RequestAddComment requestAddComment) {
         requestAddComment.setBoardId(boardId);
         requestAddComment.setEmail(email);
         boardService.addComment(boardId, requestAddComment);
@@ -120,7 +123,7 @@ public class BoardRestController {
 
     @PutMapping("/{boardId}/comments/{commentId}")
     public ResponseEntity<Map<String, String>> updateComment(@PathVariable String boardId,
-        @PathVariable String commentId, @RequestBody RequestSetComment requestSetComment) {
+        @PathVariable String commentId, @Valid @RequestBody RequestSetComment requestSetComment) {
         requestSetComment.setBoardId(boardId);
         requestSetComment.setCommentId(commentId);
         boardService.updateComment(boardId, commentId, requestSetComment);
@@ -145,7 +148,7 @@ public class BoardRestController {
     @PostMapping("/{boardId}/likes")
     public ResponseEntity<Map<String, String>> addLike(
         @AuthenticationPrincipal String email, @PathVariable String boardId,
-        @RequestBody RequestAddLike requestAddLike) {
+        @Valid @RequestBody RequestAddLike requestAddLike) {
         requestAddLike.setEmail(email);
         boardService.addLike(boardId, requestAddLike);
         Map<String, String> response = new HashMap<>();
