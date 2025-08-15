@@ -46,8 +46,8 @@ public class SecurityConfig {
             new JwtAuthenticationFilter(authenticationManager, jwtTokenProvider, jwtProperties));
     http.addFilter(new JwtBasicAuthenticationFilter(authenticationManager, jwtProperties));
     http.authorizeHttpRequests(auth ->
-            auth.requestMatchers("/h2-console/**", "/api/members", "/login").permitAll() // H2 콘솔 허용
-                    .requestMatchers(HttpMethod.GET,  "/api/members/**-availability/**").permitAll() //회원가입시 중복값 확인
+            auth.requestMatchers("/h2-console/**", "/api/members", "/login").permitAll()
+                    .requestMatchers(HttpMethod.GET,  "/api/members/**-availability/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/boards/rank").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/boards/search").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/boards/category").permitAll()
@@ -59,10 +59,9 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.DELETE, "/api/boards/*").hasRole("USER")
                     .requestMatchers(HttpMethod.POST, "/api/boards/*/comments").hasRole("USER")
                     .requestMatchers(HttpMethod.POST, "/api/boards/*/likes").hasRole("USER")
-                    .requestMatchers(HttpMethod.GET,  "/api/members/mypage").hasRole("USER") //사용자가 마이페이지 접근가능
-                    .requestMatchers(HttpMethod.POST,  "/api/members/mypage/verifyPassword").hasRole("USER") //정보수정 전 비밀번호 확인
+                    .requestMatchers(HttpMethod.GET,  "/api/members/mypage").hasRole("USER")
+                    .requestMatchers(HttpMethod.POST,  "/api/members/mypage/verifyPassword").hasRole("USER")
                     .requestMatchers(HttpMethod.PUT,  "/api/members/grade").permitAll()
-                    .requestMatchers("/api/boards").permitAll()
                     .requestMatchers("/api/members/test").hasAnyRole("USER")
                     .requestMatchers("/api/camps/members/**").hasRole("USER")
                     .requestMatchers("/api/camps/**").permitAll()
