@@ -35,7 +35,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
     // 회원별 좋아요 합계 (글 없는 회원도 포함하려면 LEFT JOIN으로 Member 시작)
     @Query("""
-     SELECT new com.campinglog.campinglogbackserver.common.dto.MemberLikeSummary(
+     SELECT new com.campinglog.campinglogbackserver.member.dto.MemberLikeSummary(
        m.email,
        COALESCE(SUM(b.likeCount), 0)
      )
