@@ -19,7 +19,7 @@ import org.hibernate.annotations.ColumnDefault;
 @Builder
 @ToString(exclude = {"board", "member"})  // 순환참조 방지
 @EqualsAndHashCode(exclude = {"board", "member"})  // 순환참조 방지
-public class Like {
+public class BoardLike {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

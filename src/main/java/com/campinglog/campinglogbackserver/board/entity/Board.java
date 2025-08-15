@@ -67,7 +67,7 @@ public class Board {
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<Like> likes = new ArrayList<>();
+    private List<BoardLike> boardLikes = new ArrayList<>();
 
     // 편의 메서드
     public String getEmail() {

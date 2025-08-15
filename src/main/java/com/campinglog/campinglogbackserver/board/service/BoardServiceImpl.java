@@ -13,7 +13,7 @@ import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetComment
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetLike;
 import com.campinglog.campinglogbackserver.board.entity.Board;
 import com.campinglog.campinglogbackserver.board.entity.Comment;
-import com.campinglog.campinglogbackserver.board.entity.Like;
+import com.campinglog.campinglogbackserver.board.entity.BoardLike;
 import com.campinglog.campinglogbackserver.board.repository.BoardRepository;
 import com.campinglog.campinglogbackserver.board.repository.CommentRepository;
 import com.campinglog.campinglogbackserver.board.repository.LikeRepository;
@@ -250,12 +250,12 @@ public class BoardServiceImpl implements BoardService {
             throw new RuntimeException("이미 좋아요 누른 게시글");
         }
 
-        Like like = modelMapper.map(requestAddLike, Like.class);
-        like.setLikeId(UUID.randomUUID().toString());
-        like.setBoard(board);
-        like.setMember(member);
+        BoardLike boardLike = modelMapper.map(requestAddLike, BoardLike.class);
+        boardLike.setLikeId(UUID.randomUUID().toString());
+        boardLike.setBoard(board);
+        boardLike.setMember(member);
 
-        likeRepository.save(like);
+        likeRepository.save(boardLike);
 
         board.setLikeCount(board.getLikeCount() + 1);
         boardRepository.save(board);
@@ -294,12 +294,12 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public void deleteLike(String boardId, String email) {
-        Like like = likeRepository.findByBoardBoardIdAndMemberEmail(boardId, email)
+        BoardLike boardLike = likeRepository.findByBoardBoardIdAndMemberEmail(boardId, email)
             .orElseThrow(() -> new RuntimeException("좋아요하지 않은 게시글입니다."));
 
-        Board board = like.getBoard();
+        Board board = boardLike.getBoard();
 
-        likeRepository.delete(like);
+        likeRepository.delete(boardLike);
 
         if (board.getLikeCount() > 0) {
             board.setLikeCount(board.getLikeCount() - 1);
