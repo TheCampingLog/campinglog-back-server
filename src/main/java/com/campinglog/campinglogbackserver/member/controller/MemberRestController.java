@@ -41,7 +41,7 @@ public class MemberRestController {
   }
 
   @PutMapping("/grade")
-  public ResponseEntity<Map<String, Integer>> runNow() {
+  public ResponseEntity<Map<String, Integer>> setMemberGrade() {
     int changed = memberService.updateGradeWeekly();
     return ResponseEntity.ok(Map.of("changed", changed));
   }

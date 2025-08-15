@@ -2,7 +2,7 @@ package com.campinglog.campinglogbackserver.member.service;
 
 import com.campinglog.campinglogbackserver.board.entity.Board;
 import com.campinglog.campinglogbackserver.board.repository.BoardRepository;
-import com.campinglog.campinglogbackserver.common.dto.MemberLikeSummary;
+import com.campinglog.campinglogbackserver.member.dto.MemberLikeSummary;
 import com.campinglog.campinglogbackserver.member.dto.request.*;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoard;

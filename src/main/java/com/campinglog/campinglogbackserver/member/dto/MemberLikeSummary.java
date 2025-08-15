@@ -1,4 +1,4 @@
-package com.campinglog.campinglogbackserver.common.dto;
+package com.campinglog.campinglogbackserver.member.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

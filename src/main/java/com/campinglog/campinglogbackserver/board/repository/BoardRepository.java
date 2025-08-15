@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import com.campinglog.campinglogbackserver.common.dto.MemberLikeSummary;
+import com.campinglog.campinglogbackserver.member.dto.MemberLikeSummary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
