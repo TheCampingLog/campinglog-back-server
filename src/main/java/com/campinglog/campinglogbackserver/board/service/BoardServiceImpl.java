@@ -169,6 +169,28 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
+    public void deleteComment(String boardId, String commentId) {
+        Board board = boardRepository.findByBoardId(boardId)
+            .orElseThrow(() -> new EntityNotFoundException(
+                "게시글을 찾을 수 없습니다. boardId=" + boardId));
+
+        Comment comment = commentRepository.findByCommentId(commentId)
+            .orElseThrow(() -> new EntityNotFoundException(
+                "댓글을 찾을 수 없습니다. commentId=" + commentId));
+
+        if (!comment.getBoardId().equals(boardId)) {
+            throw new RuntimeException("해당 게시글의 댓글이 아닙니다.");
+        }
+
+        commentRepository.delete(comment);
+
+        if (board.getCommentCount() > 0) {
+            board.setCommentCount(board.getCommentCount() - 1);
+            boardRepository.save(board);
+        }
+    }
+
+    @Override
     public void addLike(String boardId, RequestAddLike requestAddLike) {
         Board board = boardRepository.findByBoardId(boardId)
             .orElseThrow(() -> new EntityNotFoundException(
