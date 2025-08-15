@@ -21,5 +21,6 @@ public class ResponseGetBoardByCategory {
     private int commentCount;
     private String boardImage;
     private String createdAt;
+    private String nickName;
 
 }

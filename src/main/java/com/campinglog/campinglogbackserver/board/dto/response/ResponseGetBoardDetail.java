@@ -19,5 +19,6 @@ public class ResponseGetBoardDetail {
     private int likeCount;
     private int commentCount;
     private String createdAt;
+    private String email;
 
 }

@@ -18,6 +18,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,10 +36,11 @@ public class BoardRestController {
 
     private final BoardService boardService;
 
-
     @PostMapping
     public ResponseEntity<Map<String, String>> addBoard(
+        @AuthenticationPrincipal String email,
         @RequestBody RequestAddBoard requestAddBoard) {
+        requestAddBoard.setEmail(email);
         boardService.addBoard(requestAddBoard);
         Map<String, String> response = new HashMap<>();
         response.put("message", "게시글이 등록되었습니다.");
@@ -46,9 +48,11 @@ public class BoardRestController {
     }
 
     @PutMapping("/{boardId}")
-    public ResponseEntity<Map<String, String>> setBoard(@PathVariable String boardId,
+    public ResponseEntity<Map<String, String>> setBoard(
+        @AuthenticationPrincipal String email, @PathVariable String boardId,
         @RequestBody RequestSetBoard requestsetBoard) {
         requestsetBoard.setBoardId(boardId);
+        requestsetBoard.setEmail(email);
         boardService.setBoard(requestsetBoard);
         Map<String, String> response = new HashMap<>();
         response.put("message", "게시글이 수정되었습니다.");
@@ -84,9 +88,11 @@ public class BoardRestController {
     }
 
     @PostMapping("/{boardId}/comment")
-    public ResponseEntity<Map<String, String>> addComment(@PathVariable String boardId,
+    public ResponseEntity<Map<String, String>> addComment(
+        @AuthenticationPrincipal String email, @PathVariable String boardId,
         @RequestBody RequestAddComment requestAddComment) {
         requestAddComment.setBoardId(boardId);
+        requestAddComment.setEmail(email);
         boardService.addComment(boardId, requestAddComment);
         Map<String, String> response = new HashMap<>();
         response.put("message", "댓글이 등록되었습니다.");
@@ -126,7 +132,8 @@ public class BoardRestController {
     }
 
     @DeleteMapping("/{boardId}/comments/{commentId}")
-    public ResponseEntity<Map<String, String>> deleteComment(@PathVariable String boardId, @PathVariable String commentId) {
+    public ResponseEntity<Map<String, String>> deleteComment(@PathVariable String boardId,
+        @PathVariable String commentId) {
         boardService.deleteComment(boardId, commentId);
         Map<String, String> response = new HashMap<>();
         response.put("message", "댓글이 삭제되었습니다.");
@@ -136,8 +143,10 @@ public class BoardRestController {
     }
 
     @PostMapping("/{boardId}/likes")
-    public ResponseEntity<Map<String, String>> addLike(@PathVariable String boardId,
+    public ResponseEntity<Map<String, String>> addLike(
+        @AuthenticationPrincipal String email, @PathVariable String boardId,
         @RequestBody RequestAddLike requestAddLike) {
+        requestAddLike.setEmail(email);
         boardService.addLike(boardId, requestAddLike);
         Map<String, String> response = new HashMap<>();
         response.put("message", "좋아요가 추가되었습니다.");
@@ -149,12 +158,11 @@ public class BoardRestController {
     public ResponseEntity<ResponseGetLike> getLikes(@PathVariable String boardId) {
         ResponseGetLike result = boardService.getLikes(boardId);
         return ResponseEntity.ok(result);
-
     }
 
     @DeleteMapping("/{boardId}/likes")
-    public ResponseEntity<Map<String, String>> deleteLike(@PathVariable String boardId,
-        @RequestParam String email) {
+    public ResponseEntity<Map<String, String>> deleteLike(
+        @AuthenticationPrincipal String email, @PathVariable String boardId) {
         boardService.deleteLike(boardId, email);
         Map<String, String> response = new HashMap<>();
         response.put("message", "좋아요가 취소되었습니다.");
