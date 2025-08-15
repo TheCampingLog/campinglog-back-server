@@ -125,6 +125,16 @@ public class BoardRestController {
         return ResponseEntity.ok(response);
     }
 
+    @DeleteMapping("/{boardId}/comments/{commentId}")
+    public ResponseEntity<Map<String, String>> deleteComment(@PathVariable String boardId, @PathVariable String commentId) {
+        boardService.deleteComment(boardId, commentId);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "댓글이 삭제되었습니다.");
+        response.put("status", "success");
+
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/{boardId}/likes")
     public ResponseEntity<Map<String, String>> addLike(@PathVariable String boardId,
         @RequestBody RequestAddLike requestAddLike) {

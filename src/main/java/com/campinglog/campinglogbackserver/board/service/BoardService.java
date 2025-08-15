@@ -41,4 +41,6 @@ public interface BoardService {
 
     void updateComment(String boardId, String commentId, RequestSetComment requestSetComment);
 
+    void deleteComment(String boardId, String commentId);
+
 }
