@@ -21,10 +21,16 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional; // ← Spring 트랜잭션
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -136,6 +142,36 @@ public class MemberServiceImpl implements MemberService {
     if (!changedMembers.isEmpty()) memberRepository.saveAll(changedMembers);
     log.info("Weekly promotion executed. changed={}", changedMembers.size());
     return changedMembers.size();
+  }
+
+  @Override
+  public List<Map<String, Object>> updateRankWeekly(int memberNo) {
+    // 이번 주 구간: [이번 주 목요일 0시, 다음 주 목요일 0시)
+    LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+    LocalDate thisThursday = today.with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.THURSDAY));
+    LocalDate nextThursday = thisThursday.plusWeeks(1);
+
+    LocalDateTime start = thisThursday.atStartOfDay();
+    LocalDateTime end   = nextThursday.atStartOfDay();
+
+    // 좋아요 발생 시점 기준 집계
+    List<MemberRepository.WeeklyLikeAggRow> rows = memberRepository.findTopMembersByLikeCreatedAt(start, end);
+
+    // Top N만 추리기
+    List<Map<String,Object>> result = new ArrayList<>();
+    IntStream.range(0, Math.min(memberNo, rows.size()))
+            .forEach(i -> {
+              MemberRepository.WeeklyLikeAggRow r = rows.get(i);
+              Map<String,Object> item = new LinkedHashMap<>();
+              item.put("rank", i+1);
+              item.put("email", r.getEmail());
+              item.put("nickname", r.getNickname());
+              item.put("profileImage", r.getProfileImage());
+              item.put("totalLikes", r.getTotalLikes());
+              result.add(item);
+            });
+
+    return result;
   }
 
   /** 등급 정책: GREEN < BLUE < RED < BLACK  (임계값: 20/50/100) */

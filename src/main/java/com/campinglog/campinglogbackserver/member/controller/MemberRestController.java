@@ -10,6 +10,8 @@ import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberProfileImage;
 import com.campinglog.campinglogbackserver.member.service.MemberService;
 import jakarta.validation.Valid;
+
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -44,6 +46,13 @@ public class MemberRestController {
   public ResponseEntity<Map<String, Integer>> setMemberGrade() {
     int changed = memberService.updateGradeWeekly();
     return ResponseEntity.ok(Map.of("changed", changed));
+  }
+
+  @GetMapping("/rank")
+  public ResponseEntity<List<Map<String,Object>>> getWeeklyRanking(
+          @RequestParam(defaultValue = "5") int limit
+  ) {
+    return ResponseEntity.ok(memberService.updateRankWeekly(limit));
   }
 
   @GetMapping("/mypage")

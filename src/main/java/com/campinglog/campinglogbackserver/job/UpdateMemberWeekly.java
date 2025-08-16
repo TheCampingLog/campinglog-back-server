@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class UpdateGradeWeekly {
+public class UpdateMemberWeekly {
 
     private final MemberService memberService;
 
@@ -19,5 +19,8 @@ public class UpdateGradeWeekly {
     public void promoteEveryThursday9am() {
         int changed = memberService.updateGradeWeekly();
         log.info("[CRON] Thursday 09:00 promotion done. changed={}", changed);
+
+        memberService.updateRankWeekly(5);
+        log.info("[CRON] weekly ranking snapshot done.");
     }
 }
