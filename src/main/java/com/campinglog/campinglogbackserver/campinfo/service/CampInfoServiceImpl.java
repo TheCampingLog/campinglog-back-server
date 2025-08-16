@@ -18,7 +18,7 @@ import com.campinglog.campinglogbackserver.campinfo.exception.NullReviewError;
 import com.campinglog.campinglogbackserver.campinfo.repository.ReviewOfBoardRepository;
 import com.campinglog.campinglogbackserver.campinfo.repository.ReviewRepository;
 import com.campinglog.campinglogbackserver.member.entity.Member;
-import com.campinglog.campinglogbackserver.member.repository.MemberRespository;
+import com.campinglog.campinglogbackserver.member.repository.MemberRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -51,7 +51,7 @@ public class CampInfoServiceImpl implements CampInfoService{
     @Value("${external.camp.api-key}")
     private String serviceKey;
     private final ObjectMapper objectMapper;
-    private final MemberRespository memberRespository;
+    private final MemberRepository memberRepository;
 
     @Override
     public ResponseGetBoardReview getBoardReview(String mapX, String mapY) {
@@ -148,7 +148,7 @@ public class CampInfoServiceImpl implements CampInfoService{
     @Transactional
     @Override
     public void addReview(RequestAddReview requestAddReview) {
-        Member memberRef = memberRespository.getReferenceById(requestAddReview.getEmail());
+        Member memberRef = memberRepository.getReferenceById(requestAddReview.getEmail());
         Review review = Review.builder()
             .member(memberRef)
             .mapX(requestAddReview.getMapX())
