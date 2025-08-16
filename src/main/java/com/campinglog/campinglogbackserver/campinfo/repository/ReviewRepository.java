@@ -12,5 +12,5 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
   List<Review> findByMapXAndMapY(String mapX, String mapY);
   @EntityGraph(attributePaths = "member")
   Page<Review> findByMapXAndMapY(String mapX, String mapY, Pageable pageable);
-  Page<Review> findByEmail(String email, Pageable pageable);
+  Page<Review> findByMember_Email(String email, Pageable pageable);
 }

@@ -17,6 +17,8 @@ import com.campinglog.campinglogbackserver.campinfo.entity.Review;
 import com.campinglog.campinglogbackserver.campinfo.exception.NullReviewError;
 import com.campinglog.campinglogbackserver.campinfo.repository.ReviewOfBoardRepository;
 import com.campinglog.campinglogbackserver.campinfo.repository.ReviewRepository;
+import com.campinglog.campinglogbackserver.member.entity.Member;
+import com.campinglog.campinglogbackserver.member.repository.MemberRespository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -49,6 +51,7 @@ public class CampInfoServiceImpl implements CampInfoService{
     @Value("${external.camp.api-key}")
     private String serviceKey;
     private final ObjectMapper objectMapper;
+    private final MemberRespository memberRespository;
 
     @Override
     public ResponseGetBoardReview getBoardReview(String mapX, String mapY) {
@@ -62,7 +65,7 @@ public class CampInfoServiceImpl implements CampInfoService{
     @Override
     public Mono<ResponseGetMyReviewWrapper> getMyReviews(String email, int pageNo, int size) {
         Pageable pageable = PageRequest.of(pageNo-1, size, Sort.by(Direction.DESC, "postAt"));
-        return Mono.fromCallable(() -> reviewRepository.findByEmail(email, pageable))
+        return Mono.fromCallable(() -> reviewRepository.findByMember_Email(email, pageable))
             .subscribeOn(Schedulers.boundedElastic())
             .flatMap(page ->
                 Flux.fromIterable(page.getContent())
@@ -142,10 +145,12 @@ public class CampInfoServiceImpl implements CampInfoService{
 
     }
 
+    @Transactional
     @Override
     public void addReview(RequestAddReview requestAddReview) {
+        Member memberRef = memberRespository.getReferenceById(requestAddReview.getEmail());
         Review review = Review.builder()
-            .email(requestAddReview.getEmail())
+            .member(memberRef)
             .mapX(requestAddReview.getMapX())
             .mapY(requestAddReview.getMapY())
             .reviewContent(requestAddReview.getReviewContent())
@@ -175,7 +180,7 @@ public class CampInfoServiceImpl implements CampInfoService{
 
     @Override
     public void setReview(RequestSetReview requestSetReview) {
-        Review review = reviewRepository.findById(Review.builder().Id(requestSetReview.getId()).build().getId())
+        Review review = reviewRepository.findById(Review.builder().id(requestSetReview.getId()).build().getId())
             .orElseThrow(() -> new NullReviewError("리뷰 없음: id = " + requestSetReview.getId()));
 
         boolean update = false;
@@ -209,7 +214,7 @@ public class CampInfoServiceImpl implements CampInfoService{
     @Transactional
     @Override
     public void removeReview(RequestRemoveReview requestRemoveReview) {
-        Review review = Review.builder().Id(requestRemoveReview.getId()).build();
+        Review review = Review.builder().id(requestRemoveReview.getId()).build();
         Optional<Review> deleteReview = reviewRepository.findById(review.getId());
         reviewRepository.deleteById(review.getId());
 
@@ -233,7 +238,7 @@ public class CampInfoServiceImpl implements CampInfoService{
                 .reviewImage(review.getReviewImage())
                 .reviewContent(review.getReviewContent())
                 .reviewScore(review.getReviewScore())
-                .email(review.getEmail())
+                .email(review.getMember().getEmail())
                 .setAt(review.getSetAt())
                 .nickname(review.getMember().getNickname())
                 .postAt(review.getPostAt())

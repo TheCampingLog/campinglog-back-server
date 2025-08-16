@@ -29,6 +29,11 @@ public class JwtBasicAuthenticationFilter extends BasicAuthenticationFilter {
     this.jwtProperties = jwtProperties;
   }
 
+  @Override
+  protected boolean shouldNotFilterAsyncDispatch() { return false; }
+
+  @Override
+  protected boolean shouldNotFilterErrorDispatch() { return false; }
 
   @Override
   public void doFilterInternal(HttpServletRequest request, HttpServletResponse response,

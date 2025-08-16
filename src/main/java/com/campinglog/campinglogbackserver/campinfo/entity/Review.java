@@ -17,6 +17,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.jpa.repository.Query;
 
 @Entity
 @Data
@@ -28,7 +29,7 @@ public class Review {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long Id;
+  private Long id;
 
   @Column(name = "map_x", nullable = false)
   private String mapX;
@@ -42,9 +43,6 @@ public class Review {
   @Column(name = "review_score", nullable = false)
   private Double reviewScore;
 
-  @Column(name = "email", nullable = false)
-  private String email;
-
   @Column(name = "review_image")
   private String reviewImage;
 
@@ -57,6 +55,6 @@ public class Review {
   private LocalDateTime setAt;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "email", referencedColumnName = "email", insertable = false, updatable = false, nullable = false)
+  @JoinColumn(name = "email", referencedColumnName = "email", nullable = false)
   private Member member;
 }
