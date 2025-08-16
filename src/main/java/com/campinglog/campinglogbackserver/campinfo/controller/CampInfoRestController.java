@@ -14,6 +14,7 @@ import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetMyRe
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewList;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewListPage;
 import com.campinglog.campinglogbackserver.campinfo.service.CampInfoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,19 +53,20 @@ public class CampInfoRestController {
     }
 
     @PostMapping("/members/reviews")
-    public ResponseEntity<Map<String, String>> addReview(@RequestBody RequestAddReview requestAddReview) {
+    public ResponseEntity<Map<String, String>> addReview(@AuthenticationPrincipal String email, @Valid @RequestBody RequestAddReview requestAddReview) {
+        requestAddReview.setEmail(email);
         campInfoService.addReview(requestAddReview);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PutMapping("/members/reviews")
-    public ResponseEntity<Map<String, String>> setReview(@RequestBody RequestSetReview requestSetReview) {
+    public ResponseEntity<Map<String, String>> setReview(@Valid @RequestBody RequestSetReview requestSetReview) {
         campInfoService.setReview(requestSetReview);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping("/members/reviews")
-    public  ResponseEntity<Map<String, String>> removeReview(@RequestBody RequestRemoveReview requestRemoveReview) {
+    public  ResponseEntity<Map<String, String>> removeReview(@Valid @RequestBody RequestRemoveReview requestRemoveReview) {
         campInfoService.removeReview(requestRemoveReview);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

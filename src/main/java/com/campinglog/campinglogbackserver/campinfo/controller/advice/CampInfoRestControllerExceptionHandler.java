@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Log4j2
-@RestControllerAdvice
+@RestControllerAdvice(basePackages = "campinglogbackserver.campinfo")
 public class CampInfoRestControllerExceptionHandler {
 
   @ExceptionHandler(NullReviewError.class)
