@@ -19,5 +19,6 @@ public class ResponseGetBoardByKeyword {
     private int commentCount;
     private String boardImage;
     private String createdAt;
+    private String nickName;
 
 }

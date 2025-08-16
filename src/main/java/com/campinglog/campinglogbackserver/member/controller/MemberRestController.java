@@ -40,6 +40,12 @@ public class MemberRestController {
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
+  @PutMapping("/grade")
+  public ResponseEntity<Map<String, Integer>> setMemberGrade() {
+    int changed = memberService.updateGradeWeekly();
+    return ResponseEntity.ok(Map.of("changed", changed));
+  }
+
   @GetMapping("/mypage")
   public ResponseEntity<ResponseGetMember> getMember(
           @AuthenticationPrincipal String email) {

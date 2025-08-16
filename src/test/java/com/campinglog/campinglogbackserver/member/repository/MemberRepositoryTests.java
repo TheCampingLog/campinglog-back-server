@@ -20,10 +20,10 @@ import org.springframework.orm.jpa.JpaSystemException;
 @Slf4j
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @TestMethodOrder(OrderAnnotation.class)
-class MemberRespositoryTests {
+class MemberRepositoryTests {
 
   @Autowired
-  public MemberRespository memberRespository;
+  public MemberRepository memberRepository;
 
   @Test
   @Order(1)
@@ -33,7 +33,7 @@ class MemberRespositoryTests {
     String email = "test@example.com";
 
     // when
-    Optional<Member> resultMember = memberRespository.findByEmail(email);
+    Optional<Member> resultMember = memberRepository.findByEmail(email);
 
     // then
     assertThat(resultMember).isPresent();
@@ -47,7 +47,7 @@ class MemberRespositoryTests {
     String email = "test2@example.com";
 
     // when
-    Optional<Member> resultMember = memberRespository.findByEmail(email);
+    Optional<Member> resultMember = memberRepository.findByEmail(email);
 
     // then
     assertThat(resultMember).isEmpty();
@@ -68,7 +68,7 @@ class MemberRespositoryTests {
         .build();
 
     // when
-    Member resultMember = memberRespository.save(member);
+    Member resultMember = memberRepository.save(member);
 
     // then
     assertThat(resultMember).isNotNull();
@@ -90,7 +90,7 @@ class MemberRespositoryTests {
 
     // when & then
     assertThatThrownBy(() -> {
-      memberRespository.save(member);
+      memberRepository.save(member);
     }).isInstanceOf(JpaSystemException.class);
 
   }
