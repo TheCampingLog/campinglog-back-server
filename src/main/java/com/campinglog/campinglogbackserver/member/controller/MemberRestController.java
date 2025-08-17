@@ -10,6 +10,8 @@ import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberProfileImage;
 import com.campinglog.campinglogbackserver.member.service.MemberService;
 import jakarta.validation.Valid;
+
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,10 +28,10 @@ public class MemberRestController {
 
   @PostMapping
   public ResponseEntity<Map<String, String>> addMember(
-      @Valid @RequestBody RequestAddMember requestAddMember) {
+          @Valid @RequestBody RequestAddMember requestAddMember) {
     memberService.addMember(requestAddMember);
 
-    return new ResponseEntity<>(HttpStatus.CREATED);
+    return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
   @DeleteMapping
@@ -37,7 +39,7 @@ public class MemberRestController {
           @AuthenticationPrincipal String email
   ) {
     memberService.deleteMember(email);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
   @PutMapping("/grade")
@@ -58,7 +60,7 @@ public class MemberRestController {
           @Valid @RequestBody RequestUpdateMember request
   ) {
     memberService.setMember(email, request);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
   @GetMapping("/mypage/boards")
@@ -82,7 +84,7 @@ public class MemberRestController {
           @Valid @RequestBody RequestSetProfileImage request
   ) {
     memberService.addProfileImage(email, request);
-    return new ResponseEntity<>(HttpStatus.CREATED);
+    return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
   @PutMapping("/mypage/profile-image")
@@ -91,7 +93,7 @@ public class MemberRestController {
           @Valid @RequestBody RequestSetProfileImage request
   ) {
     memberService.setProfileImage(email, request);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
   @PutMapping("/mypage/password")
@@ -100,7 +102,7 @@ public class MemberRestController {
           @Valid @RequestBody RequestChangePassword request
   ) {
     memberService.setPassword(email, request);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
   @PostMapping("/mypage/password/verify")
@@ -109,24 +111,24 @@ public class MemberRestController {
           @Valid @RequestBody RequestVerifyPassword request
   ) {
     memberService.verifyPassword(email, request);
-    return new ResponseEntity<>(HttpStatus.OK);
+    return ResponseEntity.ok().build();
   }
 
   @GetMapping("/email-availability")
   public ResponseEntity<Map<String, String>> checkEmailAvailable(@RequestParam String email) {
     memberService.checkEmailAvailable(email);
-    return new ResponseEntity<>(HttpStatus.OK);
+    return ResponseEntity.ok().build();
   }
 
   @GetMapping("/nickname-availability")
   public ResponseEntity<Map<String, String>> checkNicknameAvailable(@RequestParam String nickname) {
     memberService.checkNicknameAvailable(nickname);
-    return new ResponseEntity<>(HttpStatus.OK);
+    return ResponseEntity.ok().build();
   }
-  
+
   @GetMapping("/test")
   public ResponseEntity<Map<String, String>> test(
-      @AuthenticationPrincipal String email) {
+          @AuthenticationPrincipal String email) {
     return ResponseEntity.ok(Map.of("email", email));
   }
 
