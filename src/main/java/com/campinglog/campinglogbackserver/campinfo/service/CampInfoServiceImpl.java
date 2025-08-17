@@ -14,16 +14,20 @@ import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetRevi
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewListPage;
 import com.campinglog.campinglogbackserver.campinfo.entity.ReviewOfBoard;
 import com.campinglog.campinglogbackserver.campinfo.entity.Review;
+import com.campinglog.campinglogbackserver.campinfo.exception.ApiParsingError;
+import com.campinglog.campinglogbackserver.campinfo.exception.CallCampApiError;
+import com.campinglog.campinglogbackserver.campinfo.exception.NoExistReviewOfBoardError;
 import com.campinglog.campinglogbackserver.campinfo.exception.NullReviewError;
 import com.campinglog.campinglogbackserver.campinfo.repository.ReviewOfBoardRepository;
 import com.campinglog.campinglogbackserver.campinfo.repository.ReviewRepository;
 import com.campinglog.campinglogbackserver.member.entity.Member;
+import com.campinglog.campinglogbackserver.campinfo.exception.InvalidLimitError;
+import com.campinglog.campinglogbackserver.member.exception.MemberNotFoundError;
 import com.campinglog.campinglogbackserver.member.repository.MemberRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import java.util.Objects;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -56,6 +60,9 @@ public class CampInfoServiceImpl implements CampInfoService{
     @Override
     public ResponseGetBoardReview getBoardReview(String mapX, String mapY) {
         ReviewOfBoard reviewOfBoard = reviewOfBoardRepository.findByMapXAndMapY(mapX, mapY);
+        if(reviewOfBoard == null) {
+            throw new NoExistReviewOfBoardError("리뷰 집계가 없습니다: mapX=" + mapX + ", mapY=" + mapY);
+        }
         return ResponseGetBoardReview.builder()
             .reviewAverage(reviewOfBoard.getReviewAverage())
             .reviewCount(reviewOfBoard.getReviewCount())
@@ -64,33 +71,26 @@ public class CampInfoServiceImpl implements CampInfoService{
 
     @Override
     public Mono<ResponseGetMyReviewWrapper> getMyReviews(String email, int pageNo, int size) {
-        Pageable pageable = PageRequest.of(pageNo-1, size, Sort.by(Direction.DESC, "postAt"));
+        Pageable pageable = PageRequest.of(pageNo-1, size, Sort.by(Direction.DESC, "createAt"));
         return Mono.fromCallable(() -> reviewRepository.findByMember_Email(email, pageable))
             .subscribeOn(Schedulers.boundedElastic())
             .flatMap(page ->
                 Flux.fromIterable(page.getContent())
                     .flatMapSequential(review -> getCampDetail(review.getMapX(), review.getMapY())
-                        .onErrorResume(e -> Mono.empty())
+                        .onErrorMap(e -> new CallCampApiError("외부 API 호출 실패: mapX=" + review.getMapX()
+                            + ", mapY=" + review.getMapY()))
                         .map(detail -> {
                             return ResponseGetMyReview.builder()
+                                .id(review.getId())
                                 .reviewScore(review.getReviewScore())
                                 .reviewContent(review.getReviewContent())
                                 .mapX(review.getMapX())
                                 .mapY(review.getMapY())
-                                .postAt(review.getPostAt())
+                                .createAt(review.getCreateAt())
                                 .facltNm(detail.getFacltNm())
                                 .firstImageUrl(detail.getFirstImageUrl())
                                 .build();
-                        })
-                        .defaultIfEmpty(
-                            ResponseGetMyReview.builder()
-                                .reviewContent(review.getReviewContent())
-                                .reviewScore(review.getReviewScore())
-                                .mapY(review.getMapY())
-                                .mapX(review.getMapX())
-                                .postAt(review.getPostAt())
-                                .build()
-                        ),
+                        }),
                         5, 32
                     )
                     .collectList()
@@ -109,6 +109,10 @@ public class CampInfoServiceImpl implements CampInfoService{
 
     @Override
     public Mono<List<ResponseGetBoardReviewRank>> getBoardReviewRank(int limit) {
+        if(limit <= 0) {
+            throw new InvalidLimitError("리뷰 래잉 조회 시 limit은 0보다 커야 합니다.");
+        }
+
         Pageable pageable = PageRequest.of(
             0,
             limit,
@@ -148,6 +152,9 @@ public class CampInfoServiceImpl implements CampInfoService{
     @Transactional
     @Override
     public void addReview(RequestAddReview requestAddReview) {
+        if(!memberRepository.existsByEmail(requestAddReview.getEmail())) {
+            throw new MemberNotFoundError("회원 없음: email= " + requestAddReview.getEmail());
+        }
         Member memberRef = memberRepository.getReferenceById(requestAddReview.getEmail());
         Review review = Review.builder()
             .member(memberRef)
@@ -215,22 +222,23 @@ public class CampInfoServiceImpl implements CampInfoService{
     @Override
     public void removeReview(RequestRemoveReview requestRemoveReview) {
         Review review = Review.builder().id(requestRemoveReview.getId()).build();
-        Optional<Review> deleteReview = reviewRepository.findById(review.getId());
+        Review deleteReview = reviewRepository.findById(review.getId())
+            .orElseThrow(() -> new NullReviewError("삭제할 리뷰 없음: id = " + requestRemoveReview.getId()));
         reviewRepository.deleteById(review.getId());
 
-        ReviewOfBoard reviewOfBoard = reviewOfBoardRepository.findByMapXAndMapY(deleteReview.get().getMapX(), deleteReview.get().getMapY());
-        reviewOfBoard.setReviewAverage((reviewOfBoard.getReviewAverage()*reviewOfBoard.getReviewCount()-deleteReview.get().getReviewScore()) / (reviewOfBoard.getReviewCount()-1));
+        ReviewOfBoard reviewOfBoard = reviewOfBoardRepository.findByMapXAndMapY(deleteReview.getMapX(), deleteReview.getMapY());
+        reviewOfBoard.setReviewAverage((reviewOfBoard.getReviewAverage()*reviewOfBoard.getReviewCount()-deleteReview.getReviewScore()) / (reviewOfBoard.getReviewCount()-1));
         reviewOfBoard.setReviewCount(reviewOfBoard.getReviewCount()-1);
         reviewOfBoardRepository.save(reviewOfBoard);
-        ReviewOfBoard checkReviewOfBoard = reviewOfBoardRepository.findByMapXAndMapY(deleteReview.get().getMapX(), deleteReview.get().getMapY());
+        ReviewOfBoard checkReviewOfBoard = reviewOfBoardRepository.findByMapXAndMapY(deleteReview.getMapX(), deleteReview.getMapY());
         if(checkReviewOfBoard.getReviewCount()==0) {
-            reviewOfBoardRepository.deleteByMapXAndMapY(deleteReview.get().getMapX(), deleteReview.get().getMapY());
+            reviewOfBoardRepository.deleteByMapXAndMapY(deleteReview.getMapX(), deleteReview.getMapY());
         }
     }
 
     @Override
     public ResponseGetReviewListPage getReviewList(String mapX, String mapY, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "postAt"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createAt"));
         Page<Review> reviews = reviewRepository.findByMapXAndMapY(mapX, mapY, pageable);
 
         List<ResponseGetReviewList> content = reviews.getContent().stream()
@@ -239,9 +247,9 @@ public class CampInfoServiceImpl implements CampInfoService{
                 .reviewContent(review.getReviewContent())
                 .reviewScore(review.getReviewScore())
                 .email(review.getMember().getEmail())
-                .setAt(review.getSetAt())
+                .updateAt(review.getUpdateAt())
                 .nickname(review.getMember().getNickname())
-                .postAt(review.getPostAt())
+                .createAt(review.getCreateAt())
                 .build())
             .toList();
 
@@ -342,7 +350,7 @@ public class CampInfoServiceImpl implements CampInfoService{
             }
             return result;
         } catch (Exception e) {
-            throw new RuntimeException("GoCamping JSON 파싱 실패", e);
+            throw new ApiParsingError("GoCamping JSON 파싱 실패");
         }
     }
 
@@ -352,7 +360,7 @@ public class CampInfoServiceImpl implements CampInfoService{
             JsonNode root = objectMapper.readTree(json);
             return root.path("response").path("body").path("totalCount").asInt(0);
         } catch (Exception e) {
-            throw new RuntimeException("GoCamping totalCount 파싱 실패", e);
+            throw new ApiParsingError("GoCamping totalCount 파싱 실패");
         }
     }
 }
