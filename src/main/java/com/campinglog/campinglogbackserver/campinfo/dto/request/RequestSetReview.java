@@ -12,11 +12,11 @@ import lombok.Data;
 @Builder
 public class RequestSetReview {
   private Long id;
-  @DecimalMin(value = "124.0", message = "대한민국의 범위 내에서 선택해 주세요.")
-  @DecimalMax(value = "132.0", message = "대한민국의 범위 내에서 선택해 주세요.")
+  @DecimalMin(value = "124.0", message = "124.0~132.0 범위 내에서 입력해 주세요.")
+  @DecimalMax(value = "132.0", message = "124.0~132.0 범위 내에서 입력해 주세요.")
   private String mapX;
-  @DecimalMin(value = "33.0", message = "대한민국의 범위 내에서 선택해 주세요.")
-  @DecimalMax(value = "38.7", message = "대한민국의 범위 내에서 선택해 주세요.")
+  @DecimalMin(value = "33.0", message = "124.0~132.0 범위 내에서 입력해 주세요.")
+  @DecimalMax(value = "38.7", message = "124.0~132.0 범위 내에서 입력해 주세요.")
   private String mapY;
 //
 //  private String email;
@@ -30,7 +30,6 @@ public class RequestSetReview {
   @DecimalMax(value = "5.0", message = "별점은 5.0 이하여야 합니다.")
   private double newReviewScore;
 
-  @NotBlank(message = "수정할 이미지를 등록해 주세요.")
   private String newReviewImage;
 
 }

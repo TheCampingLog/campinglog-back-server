@@ -11,11 +11,11 @@ import lombok.Data;
 @Data
 @Builder
 public class RequestAddReview {
-  @DecimalMin(value = "124.0", message = "대한민국의 범위 내에서 선택해 주세요.")
-  @DecimalMax(value = "132.0", message = "대한민국의 범위 내에서 선택해 주세요.")
+  @DecimalMin(value = "124.0", message = "124.0~132.0 범위 내에서 입력해 주세요.")
+  @DecimalMax(value = "132.0", message = "124.0~132.0 범위 내에서 입력해 주세요.")
   private String mapX;
-  @DecimalMin(value = "33.0", message = "대한민국의 범위 내에서 선택해 주세요.")
-  @DecimalMax(value = "38.7", message = "대한민국의 범위 내에서 선택해 주세요.")
+  @DecimalMin(value = "33.0", message = "124.0~132.0 범위 내에서 입력해 주세요.")
+  @DecimalMax(value = "38.7", message = "124.0~132.0 범위 내에서 입력해 주세요.")
   private String mapY;
 
   private String email;

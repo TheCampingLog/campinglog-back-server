@@ -15,7 +15,7 @@ public class ResponseGetReviewList {
   private double reviewScore;
   private String reviewImage;
 
-  private LocalDateTime postAt;
-  private LocalDateTime setAt;
+  private LocalDateTime createAt;
+  private LocalDateTime updateAt;
 
 }
