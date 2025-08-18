@@ -163,7 +163,7 @@ class MemberServiceTest {
 
     // when & then
     assertThatThrownBy(() -> memberService.verifyPassword("noone@example.com", req))
-            .isInstanceOf(RuntimeException.class); // → 실제 구현 시 MemberNotFoundError 등 구체화 가능
+            .isInstanceOf(MemberNotFoundError.class);
   }
 
 
@@ -250,7 +250,7 @@ class MemberServiceTest {
             .build();
 
     assertThatThrownBy(() -> memberService.setMember("ghost@example.com", req))
-            .isInstanceOf(RuntimeException.class);
+            .isInstanceOf(MemberNotFoundError.class);
   }
 
   @Test
@@ -284,7 +284,7 @@ class MemberServiceTest {
     RequestSetProfileImage req = new RequestSetProfileImage("http://image.com/x.png");
 
     assertThatThrownBy(() -> memberService.addProfileImage("ghost@example.com", req))
-            .isInstanceOf(RuntimeException.class);
+            .isInstanceOf(ProfileImageNotFoundError.class);
   }
 
   @Test
@@ -472,6 +472,6 @@ class MemberServiceTest {
   public void deleteMember_nonExisting_ThrowsException() {
     // when & then
     assertThatThrownBy(() -> memberService.deleteMember("ghost@example.com"))
-            .isInstanceOf(RuntimeException.class); // 실제로 MemberNotFoundError 로 구체화 필요
+            .isInstanceOf(MemberNotFoundError.class);
   }
 }
