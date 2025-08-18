@@ -310,6 +310,51 @@ class MemberServiceTest {
 
   @Test
   @Order(14)
+  void deleteProfileImage_success() {
+    // given
+    Member member = Member.builder()
+            .email("test@example.com")
+            .password("password")
+            .name("홍길동")
+            .nickname("tester")
+            .birthday(LocalDate.of(1990, 1, 1))
+            .phoneNumber("010-1234-5678")
+            .role(Member.Role.USER)
+            .profileImage("https://example.com/profile.jpg")
+            .build();
+    memberRepository.save(member);
+
+    // when
+    memberService.deleteProfileImage("test@example.com");
+
+    // then
+    Member found = memberRepository.findByEmail("test@example.com").orElseThrow();
+    assertThat(found.getProfileImage()).isNull();
+  }
+
+  @Test
+  @Order(15)
+  void deleteProfileImage_noImages_throwsException() {
+    // given
+    Member member = Member.builder()
+            .email("ghost@example.com")
+            .password("password")
+            .name("홍길동")
+            .nickname("tester")
+            .birthday(LocalDate.of(1990, 1, 1))
+            .phoneNumber("010-1234-5678")
+            .role(Member.Role.USER)
+            .build();
+    memberRepository.save(member);
+
+    // expect
+    assertThatThrownBy(() ->
+            memberService.deleteProfileImage("ghost@example.com"))
+            .isInstanceOf(ProfileImageNotFoundError.class);
+  }
+
+  @Test
+  @Order(16)
   public void getMemberByEmail_nonExisting_ThrowsException() {
     // when & then
     assertThatThrownBy(() -> memberService.getMember("ghost@example.com"))
@@ -317,7 +362,7 @@ class MemberServiceTest {
   }
 
   @Test
-  @Order(15)
+  @Order(17)
   public void updateGradeWeekly_success() {
     // given
     String email = "grade@example.com";
@@ -352,7 +397,7 @@ class MemberServiceTest {
   }
 
   @Test
-  @Order(16)
+  @Order(18)
   public void updateGradeWeekly_noBoards_returnsZero() {
     // given
     String email = "noboard@example.com";
@@ -374,7 +419,7 @@ class MemberServiceTest {
   }
 
   @Test
-  @Order(17)
+  @Order(19)
   public void updateRankWeekly_success() {
     // given
     RequestAddMember req1 = RequestAddMember.builder()
@@ -424,7 +469,7 @@ class MemberServiceTest {
   }
 
   @Test
-  @Order(18)
+  @Order(20)
   public void updateRankWeekly_noLikes_returnsEmptyList() {
     // given
     RequestAddMember req = RequestAddMember.builder()
@@ -445,7 +490,7 @@ class MemberServiceTest {
   }
 
   @Test
-  @Order(19)
+  @Order(21)
   public void deleteMember_success() {
     // given
     String email = "del@example.com";
@@ -468,7 +513,7 @@ class MemberServiceTest {
   }
 
   @Test
-  @Order(20)
+  @Order(22)
   public void deleteMember_nonExisting_ThrowsException() {
     // when & then
     assertThatThrownBy(() -> memberService.deleteMember("ghost@example.com"))
