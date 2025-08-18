@@ -45,16 +45,24 @@ public class MemberServiceImpl implements MemberService {
 
   @Override
   public void addMember(RequestAddMember requestAddMember) {
+    // 1. 중복 이메일 체크
+    if (memberRepository.existsByEmail(requestAddMember.getEmail())) {
+      throw new DuplicateEmailError("이미 존재하는 이메일입니다: " + requestAddMember.getEmail());
+    }
+
+    // 2. 중복 닉네임 체크
+    if (memberRepository.existsByNickname(requestAddMember.getNickname())) {
+      throw new DuplicateNicknameError("이미 존재하는 닉네임입니다: " + requestAddMember.getNickname());
+    }
+
+    // 3. DTO → 엔티티 매핑
     // 주입 받은 modelMapper 사용
     Member member = modelMapper.map(requestAddMember, Member.class);
-    String encodedPassword = bCryptPasswordEncoder.encode(requestAddMember.getPassword());
-    member.setPassword(encodedPassword);
+    member.setPassword(bCryptPasswordEncoder.encode(requestAddMember.getPassword()));
 
-    try {
-      memberRepository.save(member);
-    } catch (RuntimeException e) {
-      throw new MemberCreationError("회원 가입에 실패했습니다");
-    }
+    // save 시 발생하는 예외는 JPA DataAccessException/RuntimeException
+    // → 별도로 감싸지 않고 스프링 전역 예외 처리(@RestControllerAdvice)에서 대응
+    memberRepository.save(member);
   }
 
   @Override
@@ -93,7 +101,11 @@ public class MemberServiceImpl implements MemberService {
   public ResponseGetMemberProfileImage getProfileImage(String email) {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
-    return modelMapper.map(member, ResponseGetMemberProfileImage.class);
+    ResponseGetMemberProfileImage resp = modelMapper.map(member, ResponseGetMemberProfileImage.class);
+    if (resp.getProfileImage() == null) {
+      throw new ProfileImageNotFoundError("등록된 프로필 이미지가 없습니다.");
+    }
+    return resp;
   }
 
   @Override
@@ -204,20 +216,15 @@ public class MemberServiceImpl implements MemberService {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
 
-    boolean matches = bCryptPasswordEncoder.matches(request.getCurrentPassword(), member.getPassword());
-    if (!matches) {
+    if (!bCryptPasswordEncoder.matches(request.getCurrentPassword(), member.getPassword())) {
       throw new PasswordMismatchError("현재 비밀번호가 일치하지 않습니다.");
     }
     if (bCryptPasswordEncoder.matches(request.getNewPassword(), member.getPassword())) {
-      throw new IllegalArgumentException("새 비밀번호가 기존 비밀번호와 동일합니다.");
+      throw new InvalidPasswordError("새 비밀번호가 기존 비밀번호와 동일합니다.");
     }
 
     member.setPassword(bCryptPasswordEncoder.encode(request.getNewPassword()));
-    try {
-      memberRepository.save(member);
-    } catch (RuntimeException e) {
-      throw new MemberCreationError("비밀번호 변경에 실패했습니다");
-    }
+    memberRepository.save(member);
   }
 
   @Override
@@ -251,11 +258,7 @@ public class MemberServiceImpl implements MemberService {
       modelMapper.getConfiguration().setSkipNullEnabled(prevSkip);
     }
 
-    try {
-      memberRepository.save(member);
-    } catch (RuntimeException e) {
-      throw new MemberCreationError("회원 정보 수정에 실패했습니다");
-    }
+    memberRepository.save(member);
   }
 
   @Override
@@ -264,11 +267,7 @@ public class MemberServiceImpl implements MemberService {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
     member.setProfileImage(request.getProfileImage());
-    try {
-      memberRepository.save(member);
-    } catch (RuntimeException e) {
-      throw new MemberCreationError("프로필 이미지 등록에 실패했습니다");
-    }
+    memberRepository.save(member);
   }
 
   @Override
@@ -277,11 +276,7 @@ public class MemberServiceImpl implements MemberService {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
     member.setProfileImage(request.getProfileImage());
-    try {
-      memberRepository.save(member);
-    } catch (RuntimeException e) {
-      throw new MemberCreationError("프로필 이미지 수정에 실패했습니다.");
-    }
+    memberRepository.save(member);
   }
 
   @Override
@@ -289,11 +284,6 @@ public class MemberServiceImpl implements MemberService {
   public void deleteMember(String email) {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
-
-    try {
-      memberRepository.delete(member);
-    } catch (RuntimeException e) {
-      throw new MemberCreationError("회원 탈퇴에 실패했습니다.");
-    }
+    memberRepository.delete(member);
   }
 }
