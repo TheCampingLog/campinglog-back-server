@@ -47,12 +47,12 @@ public class Review {
   private String reviewImage;
 
   @CreationTimestamp
-  @Column(name = "post_at", nullable = false)
-  private LocalDateTime postAt;
+  @Column(name = "create_at", nullable = false)
+  private LocalDateTime createAt;
 
   @UpdateTimestamp
-  @Column(name = "set_at")
-  private LocalDateTime setAt;
+  @Column(name = "update_at")
+  private LocalDateTime updateAt;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "email", referencedColumnName = "email", nullable = false)

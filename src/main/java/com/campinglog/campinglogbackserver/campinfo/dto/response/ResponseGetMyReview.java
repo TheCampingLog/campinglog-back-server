@@ -13,6 +13,6 @@ public class ResponseGetMyReview {
   private String firstImageUrl; //외부 api
   private String mapX;
   private String mapY;
-  private LocalDateTime postAt;
-
+  private LocalDateTime createAt;
+  private long id;
 }
