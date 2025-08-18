@@ -103,6 +103,14 @@ public class MemberRestController {
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
+  @DeleteMapping("/mypage/profile-image")
+  public ResponseEntity<Void> deleteProfileImage(
+          @AuthenticationPrincipal String email
+  ) {
+    memberService.deleteProfileImage(email);
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+  }
+
   @PutMapping("/mypage/password")
   public ResponseEntity<Map<String, String>> setPassword(
           @AuthenticationPrincipal String email,

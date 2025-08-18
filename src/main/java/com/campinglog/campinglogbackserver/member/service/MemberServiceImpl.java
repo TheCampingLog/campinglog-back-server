@@ -101,11 +101,12 @@ public class MemberServiceImpl implements MemberService {
   public ResponseGetMemberProfileImage getProfileImage(String email) {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
-    ResponseGetMemberProfileImage resp = modelMapper.map(member, ResponseGetMemberProfileImage.class);
-    if (resp.getProfileImage() == null) {
-      throw new ProfileImageNotFoundError("등록된 프로필 이미지가 없습니다.");
+    String profileImage = member.getProfileImage();
+
+    if (profileImage == null || profileImage.isBlank()) {
+      profileImage = "/images/member/profile/default.png";
     }
-    return resp;
+    return new ResponseGetMemberProfileImage(profileImage);
   }
 
   @Override
@@ -285,5 +286,19 @@ public class MemberServiceImpl implements MemberService {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
     memberRepository.delete(member);
+  }
+
+  @Override
+  @Transactional
+  public void deleteProfileImage(String email) {
+    Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
+
+    if (member.getProfileImage() == null) {
+      throw new ProfileImageNotFoundError("프로필 이미지가 존재하지 않습니다. email=" + email);
+    }
+
+    member.setProfileImage(null);
+    memberRepository.save(member);
   }
 }

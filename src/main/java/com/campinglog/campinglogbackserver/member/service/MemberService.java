@@ -27,6 +27,7 @@ public interface MemberService {
   public void setProfileImage(String email, @Valid RequestSetProfileImage request);
 
   public void deleteMember(String email);
+  public void deleteProfileImage(String email);
 
   public void checkEmailAvailable(String email);
   public void checkNicknameAvailable(String nickname);
