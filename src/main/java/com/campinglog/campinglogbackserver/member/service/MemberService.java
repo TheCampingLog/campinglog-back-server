@@ -10,6 +10,9 @@ import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberProfileImage;
 import jakarta.validation.Valid;
 
+import java.util.List;
+import java.util.Map;
+
 public interface MemberService {
 
   public void addMember(RequestAddMember requestAddMember);
@@ -30,4 +33,5 @@ public interface MemberService {
   public void verifyPassword(String email, RequestVerifyPassword request);
 
   public int updateGradeWeekly();
+  public List<Map<String, Object>> updateRankWeekly(int memberNo);
 }

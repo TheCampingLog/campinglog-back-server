@@ -48,6 +48,13 @@ public class MemberRestController {
     return ResponseEntity.ok(Map.of("changed", changed));
   }
 
+  @GetMapping("/rank")
+  public ResponseEntity<List<Map<String,Object>>> getWeeklyRanking(
+          @RequestParam(defaultValue = "5") int limit
+  ) {
+    return ResponseEntity.ok(memberService.updateRankWeekly(limit));
+  }
+
   @GetMapping("/mypage")
   public ResponseEntity<ResponseGetMember> getMember(
           @AuthenticationPrincipal String email) {
