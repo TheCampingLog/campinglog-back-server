@@ -302,10 +302,13 @@ class MemberServiceTest {
 
     memberService.addMember(req);
 
-    // when & then
-    assertThatThrownBy(() -> memberService.getProfileImage(email))
-            .isInstanceOf(ProfileImageNotFoundError.class)
-            .hasMessage("등록된 프로필 이미지가 없습니다."); // 또는 default 값 검증
+
+    // when
+    ResponseGetMemberProfileImage response = memberService.getProfileImage(email);
+
+    // then
+    assertThat(response.getProfileImage())
+            .isEqualTo("/images/member/profile/default.png"); // 또는 default 값 검증
   }
 
   @Test
