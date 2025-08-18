@@ -9,9 +9,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface LikeRepository extends JpaRepository<BoardLike, Long> {
 
-    boolean existsByBoardBoardIdAndMemberEmail(String boardId, String email);
+    boolean existsByBoard_IdAndMember_Email(Long boardIdPk, String email);
 
-    @EntityGraph(attributePaths = {"board", "member"})
-    Optional<BoardLike> findByBoardBoardIdAndMemberEmail(String boardId, String email);
+    @EntityGraph(attributePaths = {"member"})
+    Optional<BoardLike> findByBoard_IdAndMember_Email(Long boardIdPk, String email);
 
 }

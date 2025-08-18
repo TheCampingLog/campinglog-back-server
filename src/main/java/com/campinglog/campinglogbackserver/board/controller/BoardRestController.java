@@ -11,6 +11,9 @@ import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDe
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetComments;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetLike;
+import com.campinglog.campinglogbackserver.board.entity.Board;
+import com.campinglog.campinglogbackserver.board.entity.BoardLike;
+import com.campinglog.campinglogbackserver.board.entity.Comment;
 import com.campinglog.campinglogbackserver.board.service.BoardService;
 import jakarta.validation.Valid;
 import java.util.HashMap;
@@ -44,9 +47,10 @@ public class BoardRestController {
         @AuthenticationPrincipal String email,
         @Valid @RequestBody RequestAddBoard requestAddBoard) {
         requestAddBoard.setEmail(email);
-        boardService.addBoard(requestAddBoard);
+        Board saved = boardService.addBoard(requestAddBoard);
         Map<String, String> response = new HashMap<>();
         response.put("message", "게시글이 등록되었습니다.");
+        response.put("boardId", saved.getBoardId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -96,9 +100,11 @@ public class BoardRestController {
         @Valid @RequestBody RequestAddComment requestAddComment) {
         requestAddComment.setBoardId(boardId);
         requestAddComment.setEmail(email);
-        boardService.addComment(boardId, requestAddComment);
+        Comment saved = boardService.addComment(boardId, requestAddComment);
         Map<String, String> response = new HashMap<>();
         response.put("message", "댓글이 등록되었습니다.");
+        response.put("boardId", boardId);
+        response.put("commentId", saved.getCommentId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -150,9 +156,11 @@ public class BoardRestController {
         @AuthenticationPrincipal String email, @PathVariable String boardId,
         @Valid @RequestBody RequestAddLike requestAddLike) {
         requestAddLike.setEmail(email);
-        boardService.addLike(boardId, requestAddLike);
+        BoardLike saved = boardService.addLike(boardId, requestAddLike);
         Map<String, String> response = new HashMap<>();
         response.put("message", "좋아요가 추가되었습니다.");
+        response.put("boarId", boardId);
+        response.put("likeId", saved.getLikeId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

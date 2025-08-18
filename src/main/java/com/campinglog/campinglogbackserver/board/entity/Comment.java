@@ -1,9 +1,24 @@
 package com.campinglog.campinglogbackserver.board.entity;
 
 import com.campinglog.campinglogbackserver.member.entity.Member;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.ColumnDefault;
 
 @Entity
@@ -32,7 +47,7 @@ public class Comment {
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board_id", referencedColumnName = "board_id", nullable = false)
+    @JoinColumn(name = "board_id", referencedColumnName = "id", nullable = false)
     private Board board;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -50,5 +65,12 @@ public class Comment {
 
     public String getEmail() {
         return member != null ? member.getEmail() : null;
+    }
+
+    @PrePersist
+    private void prePersist() {
+        if (this.commentId == null || this.commentId.isBlank()) {
+            this.commentId = java.util.UUID.randomUUID().toString();
+        }
     }
 }

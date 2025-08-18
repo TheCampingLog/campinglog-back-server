@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class RequestSetBoard {
 
-    @NotBlank(message = "게시글 ID는 필수입니다.")
+
     private String boardId;
 
     @NotBlank(message = "제목은 필수입니다.")
@@ -29,7 +29,7 @@ public class RequestSetBoard {
 
     private String boardImage;
 
-    @NotBlank(message = "이메일은 필수입니다.")
+
     private String email;
 
 
