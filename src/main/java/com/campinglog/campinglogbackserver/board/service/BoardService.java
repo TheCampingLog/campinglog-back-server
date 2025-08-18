@@ -11,11 +11,14 @@ import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDe
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetComments;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetLike;
+import com.campinglog.campinglogbackserver.board.entity.Board;
+import com.campinglog.campinglogbackserver.board.entity.BoardLike;
+import com.campinglog.campinglogbackserver.board.entity.Comment;
 import java.util.List;
 
 public interface BoardService {
 
-    void addBoard(RequestAddBoard requestAddBoard);
+    Board addBoard(RequestAddBoard requestAddBoard);
 
     void setBoard(RequestSetBoard requestSetBoard);
 
@@ -27,11 +30,11 @@ public interface BoardService {
 
     List<ResponseGetBoardByKeyword> searchBoards(String keyword, int page, int size);
 
-    void addComment(String boardId, RequestAddComment requestAddComment);
+    Comment addComment(String boardId, RequestAddComment requestAddComment);
 
     List<ResponseGetComments> getComments(String boardId, int page, int size);
 
-    void addLike(String boardId, RequestAddLike requestAddLike);
+    BoardLike addLike(String boardId, RequestAddLike requestAddLike);
 
     List<ResponseGetBoardByCategory> getBoardsByCategory(String category, int page, int size);
 

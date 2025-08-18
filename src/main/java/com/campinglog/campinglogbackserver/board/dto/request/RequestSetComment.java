@@ -13,10 +13,10 @@ import lombok.NoArgsConstructor;
 @Builder
 public class RequestSetComment {
 
-    @NotBlank(message = "게시글 ID는 필수입니다.")
+
     private String boardId;
 
-    @NotBlank(message = "댓글 ID는 필수입니다.")
+
     private String commentId;
 
     @NotBlank(message = "댓글 내용은 필수입니다.")
