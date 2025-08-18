@@ -36,11 +36,19 @@ class MemberRepositoryTests {
   @Order(1)
   public void findByEmail_validData_Success() {
 
-    // given
-    String email = "test@example.com";
+// given
+    Member member = Member.builder()
+            .email("test@example.com")
+            .password("pw")
+            .name("테스터")
+            .nickname("닉테스트")
+            .birthday(LocalDate.of(1990, 1, 1))
+            .phoneNumber("010-0000-0000")
+            .build();
+    memberRepository.save(member);
 
     // when
-    Optional<Member> resultMember = memberRepository.findByEmail(email);
+    Optional<Member> resultMember = memberRepository.findByEmail("test@example.com");
 
     // then
     assertThat(resultMember).isPresent();
@@ -105,10 +113,18 @@ class MemberRepositoryTests {
   @Order(5)
   public void existsByEmail_existingEmail_ReturnTrue() {
     // given
-    String email = "test@example.com";
+    Member member = Member.builder()
+            .email("exist@example.com")
+            .password("pw")
+            .name("존재")
+            .nickname("existnick")
+            .birthday(LocalDate.of(1990, 1, 1))
+            .phoneNumber("010-1111-1111")
+            .build();
+    memberRepository.save(member);
 
     // when
-    boolean exists = memberRepository.existsByEmail(email);
+    boolean exists = memberRepository.existsByEmail("exist@example.com");
 
     // then
     assertThat(exists).isTrue();
@@ -131,10 +147,18 @@ class MemberRepositoryTests {
   @Order(7)
   public void existsByNickname_existingNickname_ReturnTrue() {
     // given
-    String nickname = "길동이";
+    Member member = Member.builder()
+            .email("nicktest@example.com")
+            .password("pw")
+            .name("테스터")
+            .nickname("길동이")
+            .birthday(LocalDate.of(1995, 8, 15))
+            .phoneNumber("010-9999-9999")
+            .build();
+    memberRepository.save(member);
 
     // when
-    boolean exists = memberRepository.existsByNickname(nickname);
+    boolean exists = memberRepository.existsByNickname("길동이");
 
     // then
     assertThat(exists).isTrue();
@@ -157,18 +181,28 @@ class MemberRepositoryTests {
   @Order(9)
   public void existsByNicknameAndEmailNot_sameNicknameDifferentEmail_ReturnTrue() {
     // given
-    Member another = Member.builder()
-            .email("another@example.com")
-            .password("Password456!")
-            .name("김철수")
-            .nickname("길동이") // 중복 닉네임
-            .birthday(LocalDate.of(1993, 5, 10))
-            .phoneNumber("010-2222-3333")
+    Member member1 = Member.builder()
+            .email("m1@example.com")
+            .password("pw")
+            .name("회원1")
+            .nickname("길동이")
+            .birthday(LocalDate.of(1990, 1, 1))
+            .phoneNumber("010-1111-1111")
             .build();
-    memberRepository.save(another);
+    memberRepository.save(member1);
+
+    Member member2 = Member.builder()
+            .email("m2@example.com")
+            .password("pw")
+            .name("회원2")
+            .nickname("길동이") // 같은 닉네임
+            .birthday(LocalDate.of(1992, 2, 2))
+            .phoneNumber("010-2222-2222")
+            .build();
+    memberRepository.save(member2);
 
     // when
-    boolean exists = memberRepository.existsByNicknameAndEmailNot("길동이", "another@example.com");
+    boolean exists = memberRepository.existsByNicknameAndEmailNot("길동이", "m1@example.com");
 
     // then
     assertThat(exists).isTrue();
@@ -191,18 +225,28 @@ class MemberRepositoryTests {
   @Order(11)
   public void existsByPhoneNumberAndEmailNot_samePhoneDifferentEmail_ReturnTrue() {
     // given
-    Member another = Member.builder()
-            .email("duplicatephone@example.com")
-            .password("Password789!")
-            .name("이영희")
-            .nickname("영희")
-            .birthday(LocalDate.of(1992, 3, 20))
-            .phoneNumber("010-1234-5678") // 동일 전화번호
+    Member member1 = Member.builder()
+            .email("m1@example.com")
+            .password("pw")
+            .name("회원1")
+            .nickname("닉1")
+            .birthday(LocalDate.of(1990, 1, 1))
+            .phoneNumber("010-1234-5678")
             .build();
-    memberRepository.save(another);
+    memberRepository.save(member1);
+
+    Member member2 = Member.builder()
+            .email("m2@example.com")
+            .password("pw")
+            .name("회원2")
+            .nickname("닉2")
+            .birthday(LocalDate.of(1992, 2, 2))
+            .phoneNumber("010-1234-5678") // 동일 번호
+            .build();
+    memberRepository.save(member2);
 
     // when
-    boolean exists = memberRepository.existsByPhoneNumberAndEmailNot("010-1234-5678", "duplicatephone@example.com");
+    boolean exists = memberRepository.existsByPhoneNumberAndEmailNot("010-1234-5678", "m1@example.com");
 
     // then
     assertThat(exists).isTrue();
@@ -225,46 +269,56 @@ class MemberRepositoryTests {
   @Order(13)
   public void findTopMembersByLikeCreatedAt_validRange_ReturnsAggregatedLikes() {
     // given
-    LocalDateTime start = LocalDateTime.now().minusDays(7);
-    LocalDateTime end = LocalDateTime.now().plusDays(1);
-
-    // 테스트용 회원1
     Member member1 = Member.builder()
             .email("like1@example.com")
             .password("pw")
             .name("사용자1")
-            .nickname("닉네임1")
+            .nickname("닉1")
             .birthday(LocalDate.of(1990, 1, 1))
             .phoneNumber("010-1111-1111")
             .build();
     memberRepository.save(member1);
 
-    // 테스트용 회원2
     Member member2 = Member.builder()
             .email("like2@example.com")
             .password("pw")
             .name("사용자2")
-            .nickname("닉네임2")
+            .nickname("닉2")
             .birthday(LocalDate.of(1992, 2, 2))
             .phoneNumber("010-2222-2222")
             .build();
     memberRepository.save(member2);
 
-    // 여기서 Board, BoardLike 엔티티를 저장해서 좋아요 데이터 심어줘야 함
-    // (예: member1 게시글에 좋아요 2개, member2 게시글에 좋아요 1개)
-    // repository.save(...) or testEntityManager.persist(...) 사용
+    Board board1 = Board.builder().title("board1").content("content1")
+            .categoryName("free").member(member1).build();
+    Board board2 = Board.builder().title("board2").content("content2")
+            .categoryName("free").member(member2).build();
+    boardRepository.save(board1);
+    boardRepository.save(board2);
+
+    // 좋아요: board1(2개: member2, member1), board2(1개: member1)
+    BoardLike like1 = BoardLike.builder().board(board1).member(member2).build();
+    BoardLike like2 = BoardLike.builder().board(board1).member(member1).build(); // ✅ 중복 제거
+    BoardLike like3 = BoardLike.builder().board(board2).member(member1).build();
+
+    board1.getBoardLikes().addAll(List.of(like1, like2));
+    board2.getBoardLikes().add(like3);
+    boardRepository.save(board1);
+    boardRepository.save(board2);
+
+    LocalDateTime start = LocalDateTime.now().minusDays(1);
+    LocalDateTime end = LocalDateTime.now().plusDays(1);
 
     // when
     List<MemberRepository.WeeklyLikeAggRow> results =
             memberRepository.findTopMembersByLikeCreatedAt(start, end);
 
     // then
-    assertThat(results).isNotEmpty();
+    assertThat(results).hasSize(2);
     assertThat(results.get(0).getEmail()).isEqualTo("like1@example.com");
-    assertThat(results.get(0).getTotalLikes()).isGreaterThanOrEqualTo(2L);
-
+    assertThat(results.get(0).getTotalLikes()).isEqualTo(2L);
     assertThat(results.get(1).getEmail()).isEqualTo("like2@example.com");
-    assertThat(results.get(1).getTotalLikes()).isGreaterThanOrEqualTo(1L);
+    assertThat(results.get(1).getTotalLikes()).isEqualTo(1L);
   }
 
   @Test
@@ -306,32 +360,20 @@ class MemberRepositoryTests {
             .build();
     memberRepository.save(member2);
 
-    // member1이 작성한 게시글
-    Board board1 = Board.builder()
-            .title("board1")
-            .content("content1")
-            .categoryName("free")
-            .member(member1)
-            .build();
+    Board board1 = Board.builder().title("board1").content("content1")
+            .categoryName("free").member(member1).build();
+    Board board2 = Board.builder().title("board2").content("content2")
+            .categoryName("free").member(member2).build();
     boardRepository.save(board1);
-
-    // member2가 작성한 게시글
-    Board board2 = Board.builder()
-            .title("board2")
-            .content("content2")
-            .categoryName("free")
-            .member(member2)
-            .build();
     boardRepository.save(board2);
 
-    // 좋아요 데이터: board1(2개), board2(1개)
+    // 좋아요: board1(2개: member2, member1), board2(1개: member1)
     BoardLike like1 = BoardLike.builder().board(board1).member(member2).build();
-    BoardLike like2 = BoardLike.builder().board(board1).member(member2).build();
+    BoardLike like2 = BoardLike.builder().board(board1).member(member1).build(); // ✅ 중복 제거
     BoardLike like3 = BoardLike.builder().board(board2).member(member1).build();
-    board1.getBoardLikes().add(like1);
-    board1.getBoardLikes().add(like2);
-    board2.getBoardLikes().add(like3);
 
+    board1.getBoardLikes().addAll(List.of(like1, like2));
+    board2.getBoardLikes().add(like3);
     boardRepository.save(board1);
     boardRepository.save(board2);
 

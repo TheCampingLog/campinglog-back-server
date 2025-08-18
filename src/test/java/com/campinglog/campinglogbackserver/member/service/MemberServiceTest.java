@@ -284,7 +284,7 @@ class MemberServiceTest {
     RequestSetProfileImage req = new RequestSetProfileImage("http://image.com/x.png");
 
     assertThatThrownBy(() -> memberService.addProfileImage("ghost@example.com", req))
-            .isInstanceOf(ProfileImageNotFoundError.class);
+            .isInstanceOf(MemberNotFoundError.class);
   }
 
   @Test
