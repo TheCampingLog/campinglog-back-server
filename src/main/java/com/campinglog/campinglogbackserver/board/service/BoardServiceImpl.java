@@ -14,12 +14,18 @@ import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetLike;
 import com.campinglog.campinglogbackserver.board.entity.Board;
 import com.campinglog.campinglogbackserver.board.entity.BoardLike;
 import com.campinglog.campinglogbackserver.board.entity.Comment;
+import com.campinglog.campinglogbackserver.board.exception.AlreadyLikedError;
+import com.campinglog.campinglogbackserver.board.exception.BoardNotFoundError;
+import com.campinglog.campinglogbackserver.board.exception.CommentNotFoundError;
+import com.campinglog.campinglogbackserver.board.exception.InvalidBoardRequestError;
+import com.campinglog.campinglogbackserver.board.exception.NotLikedError;
+import com.campinglog.campinglogbackserver.board.exception.NotYourBoardError;
 import com.campinglog.campinglogbackserver.board.repository.BoardRepository;
 import com.campinglog.campinglogbackserver.board.repository.CommentRepository;
 import com.campinglog.campinglogbackserver.board.repository.LikeRepository;
 import com.campinglog.campinglogbackserver.member.entity.Member;
+import com.campinglog.campinglogbackserver.member.exception.MemberNotFoundError;
 import com.campinglog.campinglogbackserver.member.repository.MemberRepository;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,7 +51,7 @@ public class BoardServiceImpl implements BoardService {
 
     private Board getBoardOrThrow(String boardId) {
         return boardRepository.findByBoardId(boardId)
-            .orElseThrow(() -> new EntityNotFoundException(
+            .orElseThrow(() -> new BoardNotFoundError(
                 "해당 boardId로 게시글을 찾을 수 없습니다. boardId=" + boardId));
     }
 
@@ -55,7 +61,7 @@ public class BoardServiceImpl implements BoardService {
 
     private Member getMemberOrThrow(String email) {
         return memberRepository.findById(email)
-            .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다. email=" + email));
+            .orElseThrow(() -> new MemberNotFoundError("회원을 찾을 수 없습니다. email=" + email));
     }
 
     @Override
@@ -74,12 +80,12 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public void setBoard(RequestSetBoard requestSetBoard) {
         if (requestSetBoard.getBoardId() == null || requestSetBoard.getBoardId().isBlank()) {
-            throw new IllegalArgumentException("boardId는 필수입니다.");
+            throw new InvalidBoardRequestError("boardId는 필수입니다.");
         }
 
         Board board = getBoardOrThrow(requestSetBoard.getBoardId());
         if (!board.getMember().getEmail().equals(requestSetBoard.getEmail())) {
-            throw new RuntimeException("본인의 게시글만 수정할 수 있습니다.");
+            throw new NotYourBoardError("본인의 게시글만 수정할 수 있습니다.");
         }
 
         if (requestSetBoard.getTitle() != null) {
@@ -106,6 +112,9 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public List<ResponseGetBoardRank> getBoardRank(int limit) {
+        if (limit < 1) {
+            throw new InvalidBoardRequestError("limit는 1 이상이어야 합니다.");
+        }
         LocalDateTime weekAgo = LocalDateTime.now().minusWeeks(1);
         Pageable pageable = PageRequest.of(0, limit);
 
@@ -136,6 +145,9 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public List<ResponseGetBoardByKeyword> searchBoards(String keyword, int page, int size) {
+        if (page < 1 || size < 1) {
+            throw new InvalidBoardRequestError("page>=1, size>=1 이어야 합니다.");
+        }
         Pageable pageable = PageRequest.of(page - 1, size);
 
         List<Board> boards = boardRepository.findByTitleContainingOrderByCreatedAtDesc(keyword,
@@ -155,8 +167,8 @@ public class BoardServiceImpl implements BoardService {
     public Comment addComment(String boardId, RequestAddComment requestAddComment) {
         Board board = getBoardOrThrow(boardId);
         Member member = memberRepository.findByEmail(requestAddComment.getEmail())
-            .orElseThrow(() -> new EntityNotFoundException(
-                "회원을 찾을 수 없습니다. nickname=" + requestAddComment.getEmail()));
+            .orElseThrow(() -> new MemberNotFoundError(
+                "회원을 찾을 수 없습니다. email=" + requestAddComment.getEmail()));
 
         Comment comment = modelMapper.map(requestAddComment, Comment.class);
         comment.setBoard(board);
@@ -173,10 +185,14 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public List<ResponseGetComments> getComments(String boardId, int page, int size) {
+        if (page < 1 || size < 1) {
+            throw new InvalidBoardRequestError("page>=1, size>=1 이어야 합니다.");
+        }
         Long boardIdPk = getBoardPkOrThrow(boardId);
         Pageable pageable = PageRequest.of(page - 1, size);
 
-        List<Comment> comments = commentRepository.findByBoard_IdOrderByCreatedAtDesc(boardIdPk,
+        List<Comment> comments = commentRepository.findByBoard_IdOrderByCreatedAtDescIdDesc(
+            boardIdPk,
             pageable);
 
         return comments.stream()
@@ -194,11 +210,11 @@ public class BoardServiceImpl implements BoardService {
         Long boardIdPk = getBoardPkOrThrow(boardId);
 
         Comment comment = commentRepository.findByCommentId(commentId)
-            .orElseThrow(() -> new EntityNotFoundException(
+            .orElseThrow(() -> new CommentNotFoundError(
                 "댓글을 찾을 수 없습니다. commentId=" + commentId));
 
         if (!comment.getBoard().getId().equals(boardIdPk)) {
-            throw new RuntimeException("해당 게시글의 댓글이 아닙니다.");
+            throw new NotYourBoardError("해당 게시글의 댓글이 아닙니다.");
         }
 
         comment.setContent(requestSetComment.getContent());
@@ -210,11 +226,11 @@ public class BoardServiceImpl implements BoardService {
         Long boardIdPk = getBoardPkOrThrow(boardId);
 
         Comment comment = commentRepository.findByCommentId(commentId)
-            .orElseThrow(() -> new EntityNotFoundException(
+            .orElseThrow(() -> new CommentNotFoundError(
                 "댓글을 찾을 수 없습니다. commentId=" + commentId));
 
         if (!comment.getBoard().getId().equals(boardIdPk)) {
-            throw new RuntimeException("해당 게시글의 댓글이 아닙니다.");
+            throw new NotYourBoardError("해당 게시글의 댓글이 아닙니다.");
         }
 
         commentRepository.delete(comment);
@@ -239,7 +255,7 @@ public class BoardServiceImpl implements BoardService {
             boardIdPk, requestAddLike.getEmail());
 
         if (alreadyLiked) {
-            throw new RuntimeException("이미 좋아요 누른 게시글");
+            throw new AlreadyLikedError("이미 좋아요 누른 게시글");
         }
 
         BoardLike boardLike = modelMapper.map(requestAddLike, BoardLike.class);
@@ -258,6 +274,9 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public List<ResponseGetBoardByCategory> getBoardsByCategory(String category, int page,
         int size) {
+        if (page < 1 || size < 1) {
+            throw new InvalidBoardRequestError("page>=1, size>=1 이어야 합니다.");
+        }
         Pageable pageable = PageRequest.of(page - 1, size);
         List<Board> boards = boardRepository.findByCategoryNameOrderByCreatedAtDesc(category,
             pageable);
@@ -287,7 +306,7 @@ public class BoardServiceImpl implements BoardService {
         Long boardIdPk = getBoardPkOrThrow(boardId);
 
         BoardLike boardLike = likeRepository.findByBoard_IdAndMember_Email(boardIdPk, email)
-            .orElseThrow(() -> new RuntimeException("좋아요하지 않은 게시글입니다."));
+            .orElseThrow(() -> new NotLikedError("좋아요하지 않은 게시글입니다."));
 
         likeRepository.delete(boardLike);
 
