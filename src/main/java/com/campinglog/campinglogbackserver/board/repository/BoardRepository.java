@@ -43,13 +43,4 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
         """)
     List<MemberLikeSummary> sumLikesGroupByMember();
 
-    // 특정 이메일의 합계가 필요하면 (선택)
-    @Query("""
-           SELECT COALESCE(SUM(b.likeCount), 0)
-           FROM Board b
-           WHERE b.member.email = :email
-        """)
-    long sumLikeCountByEmail(String email);
-
-
 }

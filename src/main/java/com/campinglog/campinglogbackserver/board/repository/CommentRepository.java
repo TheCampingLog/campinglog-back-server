@@ -14,6 +14,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     Optional<Comment> findByCommentId(String commentId);
 
     @EntityGraph(attributePaths = {"member"})
-    List<Comment> findByBoard_IdOrderByCreatedAtDesc(Long boardIdPk, Pageable pageable);
+    List<Comment> findByBoard_IdOrderByCreatedAtDescIdDesc(Long boardIdPk, Pageable pageable);
 
 }
