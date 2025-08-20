@@ -5,7 +5,9 @@ import static com.campinglog.campinglogbackserver.common.exception.ExceptionHand
 import com.campinglog.campinglogbackserver.campinfo.exception.ApiParsingError;
 import com.campinglog.campinglogbackserver.campinfo.exception.CallCampApiError;
 import com.campinglog.campinglogbackserver.campinfo.exception.InvalidLimitError;
+import com.campinglog.campinglogbackserver.campinfo.exception.NoExistCampError;
 import com.campinglog.campinglogbackserver.campinfo.exception.NoExistReviewOfBoardError;
+import com.campinglog.campinglogbackserver.campinfo.exception.NoSearchResultError;
 import com.campinglog.campinglogbackserver.campinfo.exception.NullReviewError;
 import com.campinglog.campinglogbackserver.common.exception.CustomErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,14 +40,26 @@ public class CampInfoRestControllerExceptionHandler {
   }
 
   @ExceptionHandler(CallCampApiError.class)
-  public  ResponseEntity<CustomErrorResponse> handleCallCamp(Exception e, HttpServletRequest request) {
+  public ResponseEntity<CustomErrorResponse> handleCallCamp(Exception e, HttpServletRequest request) {
     log.warn("CallCampApiError: {}", e.getMessage(), e);
     return buildResponse(request, HttpStatus.BAD_REQUEST, "요청 처리 중 문제가 발생했습니다. error: " + e.getMessage());
   }
 
   @ExceptionHandler(InvalidLimitError.class)
-  public  ResponseEntity<CustomErrorResponse> handleInvalidLimit(Exception e, HttpServletRequest request) {
+  public ResponseEntity<CustomErrorResponse> handleInvalidLimit(Exception e, HttpServletRequest request) {
     log.warn("InvalidLimitError: {}", e.getMessage(), e);
+    return buildResponse(request, HttpStatus.BAD_REQUEST, "요청 처리 중 문제가 발생했습니다. error: " + e.getMessage());
+  }
+
+  @ExceptionHandler(NoExistCampError.class)
+  public ResponseEntity<CustomErrorResponse> handleCampLocation(Exception e, HttpServletRequest request) {
+    log.warn("CampLocation Error: {}", e.getMessage(), e);
+    return buildResponse(request, HttpStatus.BAD_REQUEST, "요청 처리 중 문제가 발생했습니다. error: " + e.getMessage());
+  }
+
+  @ExceptionHandler(NoSearchResultError.class)
+  public ResponseEntity<CustomErrorResponse> handleSearchResult(Exception e, HttpServletRequest request) {
+    log.warn("SearchResult Error: {}", e.getMessage(), e);
     return buildResponse(request, HttpStatus.BAD_REQUEST, "요청 처리 중 문제가 발생했습니다. error: " + e.getMessage());
   }
 }

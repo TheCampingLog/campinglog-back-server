@@ -16,7 +16,9 @@ import com.campinglog.campinglogbackserver.campinfo.entity.ReviewOfBoard;
 import com.campinglog.campinglogbackserver.campinfo.entity.Review;
 import com.campinglog.campinglogbackserver.campinfo.exception.ApiParsingError;
 import com.campinglog.campinglogbackserver.campinfo.exception.CallCampApiError;
+import com.campinglog.campinglogbackserver.campinfo.exception.NoExistCampError;
 import com.campinglog.campinglogbackserver.campinfo.exception.NoExistReviewOfBoardError;
+import com.campinglog.campinglogbackserver.campinfo.exception.NoSearchResultError;
 import com.campinglog.campinglogbackserver.campinfo.exception.NullReviewError;
 import com.campinglog.campinglogbackserver.campinfo.repository.ReviewOfBoardRepository;
 import com.campinglog.campinglogbackserver.campinfo.repository.ReviewRepository;
@@ -283,10 +285,10 @@ public class CampInfoServiceImpl implements CampInfoService{
             .timeout(Duration.ofSeconds(6))
             .map(json -> {
                 List<ResponseGetCampDetail> list = parseItems(json, ResponseGetCampDetail.class);
-                if(list.isEmpty()) throw new IllegalArgumentException("해당 게시글이 존재하지 않습니다.");
+                if(list.isEmpty()) throw new NoExistCampError("해당 게시글이 존재하지 않습니다.");
                 return list.get(0);
             });
-    } //eternalApiException
+    }
 
     @Override
     public Mono<List<ResponseGetCampListLatest>> getCampListLatest(int pageNo) {
@@ -328,13 +330,15 @@ public class CampInfoServiceImpl implements CampInfoService{
             .map(json -> {
                 int total = parseTotalCount(json);
                 List<ResponseGetCampByKeyword> list = parseItems(json, ResponseGetCampByKeyword.class);
+                if(list.isEmpty()) {
+                    throw new NoSearchResultError("검색 결과가 없습니다: keyword=" + keyword);
+                }
+
                 list.forEach(item -> item.setTotalCount(total));
                 return list;
             });
     }
 
-
-    //try catch -> advice
     private <T> List<T> parseItems(String json, Class<T> type) {
         try {
             JsonNode root = objectMapper.readTree(json);
@@ -354,7 +358,6 @@ public class CampInfoServiceImpl implements CampInfoService{
         }
     }
 
-    //try catch -> advice
     private int parseTotalCount(String json) {
         try{
             JsonNode root = objectMapper.readTree(json);
