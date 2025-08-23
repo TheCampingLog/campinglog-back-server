@@ -7,6 +7,7 @@ import com.campinglog.campinglogbackserver.member.dto.request.RequestUpdateMembe
 import com.campinglog.campinglogbackserver.member.dto.request.RequestVerifyPassword;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
+import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberCommentList;
 import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberProfileImage;
 import jakarta.validation.Valid;
 
@@ -20,6 +21,7 @@ public interface MemberService {
 
   public ResponseGetMember getMember(String email);
   public ResponseGetMemberBoardList getBoards(String email, int pageNo);
+  public ResponseGetMemberCommentList getComments(String email, int pageNo);
   public ResponseGetMemberProfileImage getProfileImage(String email);
 
   public void setPassword(String email, @Valid RequestChangePassword request);
