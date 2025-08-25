@@ -1,11 +1,16 @@
 package com.campinglog.campinglogbackserver.member.repository;
 
+import com.campinglog.campinglogbackserver.board.entity.Comment;
+import com.campinglog.campinglogbackserver.member.dto.MemberLikeSummary;
 import com.campinglog.campinglogbackserver.member.entity.Member;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,6 +23,26 @@ public interface MemberRepository extends JpaRepository<Member, String> {
   boolean existsByNicknameAndEmailNot(String nickname, String email);
   boolean existsByPhoneNumberAndEmailNot(String phoneNumber, String email);
 
+  @Query("""
+    SELECT c
+    FROM Comment c
+    JOIN c.member m
+    WHERE m.email = :email
+  """)
+  Page<Comment> findCommentsByMember_Email(@Param("email") String email, Pageable pageable);
+
+
+  // 회원별 좋아요 합계 (글 없는 회원도 포함하려면 LEFT JOIN으로 Member 시작)
+  @Query("""
+         SELECT new com.campinglog.campinglogbackserver.member.dto.MemberLikeSummary(
+           m.email,
+           COALESCE(SUM(b.likeCount), 0)
+         )
+         FROM Member m
+         LEFT JOIN m.boards b
+         GROUP BY m.email
+      """)
+  List<MemberLikeSummary> sumLikesGroupByMember();
 
   /**
    * [start, end) 구간 동안 발생한 좋아요를 기준으로

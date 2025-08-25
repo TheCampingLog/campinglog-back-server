@@ -5,9 +5,7 @@ import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestChangePassword;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestUpdateMember;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestVerifyPassword;
-import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
-import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
-import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberProfileImage;
+import com.campinglog.campinglogbackserver.member.dto.response.*;
 import com.campinglog.campinglogbackserver.member.service.MemberService;
 import jakarta.validation.Valid;
 
@@ -76,6 +74,14 @@ public class MemberRestController {
           @RequestParam(name = "pageNo", defaultValue = "1") int pageNo
   ) {
     return ResponseEntity.ok(memberService.getBoards(email, pageNo));
+  }
+
+  @GetMapping("/mypage/comments")
+  public ResponseEntity<ResponseGetMemberCommentList> getComments(
+          @AuthenticationPrincipal String email,
+          @RequestParam(name = "pageNo", defaultValue = "1") int pageNo
+  ) {
+    return ResponseEntity.ok(memberService.getComments(email, pageNo));
   }
 
   @GetMapping("/mypage/profile-image")

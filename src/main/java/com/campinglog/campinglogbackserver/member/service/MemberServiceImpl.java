@@ -1,13 +1,11 @@
 package com.campinglog.campinglogbackserver.member.service;
 
 import com.campinglog.campinglogbackserver.board.entity.Board;
+import com.campinglog.campinglogbackserver.board.entity.Comment;
 import com.campinglog.campinglogbackserver.board.repository.BoardRepository;
 import com.campinglog.campinglogbackserver.member.dto.MemberLikeSummary;
 import com.campinglog.campinglogbackserver.member.dto.request.*;
-import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
-import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoard;
-import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
-import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberProfileImage;
+import com.campinglog.campinglogbackserver.member.dto.response.*;
 import com.campinglog.campinglogbackserver.member.entity.Member;
 import com.campinglog.campinglogbackserver.member.exception.*;
 import com.campinglog.campinglogbackserver.member.repository.MemberRepository; // ← 오타 수정
@@ -98,6 +96,29 @@ public class MemberServiceImpl implements MemberService {
 
   @Override
   @Transactional(readOnly = true)
+  public ResponseGetMemberCommentList getComments(String email, int pageNo) {
+    int pageIndex = Math.max(pageNo - 1, 0); // 1-based → 0-based
+    PageRequest pageable = PageRequest.of(pageIndex, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+    Page<Comment> page = memberRepository.findCommentsByMember_Email(email, pageable);
+
+    List<ResponseGetMemberComment> items = page.getContent().stream()
+            .map(board -> modelMapper.map(board, ResponseGetMemberComment.class))
+            .collect(Collectors.toList());
+
+    return ResponseGetMemberCommentList.builder()
+            .items(items)
+            .page(pageNo)
+            .size(PAGE_SIZE)
+            .totalElements(page.getTotalElements())
+            .totalPages(page.getTotalPages())
+            .first(page.isFirst())
+            .last(page.isLast())
+            .build();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
   public ResponseGetMemberProfileImage getProfileImage(String email) {
     Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new MemberNotFoundError("해당 이메일로 회원을 찾을 수 없습니다. email=" + email));
@@ -124,7 +145,7 @@ public class MemberServiceImpl implements MemberService {
   @Override
   @Transactional
   public int updateGradeWeekly() {
-    List<MemberLikeSummary> rows = boardRepository.sumLikesGroupByMember();
+    List<MemberLikeSummary> rows = memberRepository.sumLikesGroupByMember();
 
     if (rows.isEmpty()) {
       log.info("No boards found. No grade changes.");
