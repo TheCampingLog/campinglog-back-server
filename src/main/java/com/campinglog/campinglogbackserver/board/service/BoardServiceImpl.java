@@ -6,10 +6,12 @@ import com.campinglog.campinglogbackserver.board.dto.request.RequestAddLike;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetComment;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategory;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategoryWrapper;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetComments;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetCommentsWrapper;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetLike;
 import com.campinglog.campinglogbackserver.board.entity.Board;
 import com.campinglog.campinglogbackserver.board.entity.BoardLike;
@@ -33,8 +35,10 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -184,24 +188,36 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public List<ResponseGetComments> getComments(String boardId, int page, int size) {
+    public ResponseGetCommentsWrapper getComments(String boardId, int page, int size) {
+        log.info("[Service] getComments 시작. 전달받은 page={}, size={}", page, size);
         if (page < 1 || size < 1) {
             throw new InvalidBoardRequestError("page>=1, size>=1 이어야 합니다.");
         }
         Long boardIdPk = getBoardPkOrThrow(boardId);
         Pageable pageable = PageRequest.of(page - 1, size);
 
-        List<Comment> comments = commentRepository.findByBoard_IdOrderByCreatedAtDescIdDesc(
+        Page<Comment> comments = commentRepository.findByBoard_IdOrderByCreatedAtDescIdDesc(
             boardIdPk,
             pageable);
 
-        return comments.stream()
+        List<ResponseGetComments> dtoList = comments.getContent().stream()
             .map(comment -> {
-                ResponseGetComments response = modelMapper.map(comment, ResponseGetComments.class);
+                ResponseGetComments
+                    response = modelMapper.map(comment, ResponseGetComments.class);
                 response.setNickname(comment.getMember().getNickname());
+                response.setCreatedAt(comment.getCreatedAt().toString());
                 return response;
             })
             .collect(Collectors.toList());
+        return ResponseGetCommentsWrapper.builder()
+            .content(dtoList)
+            .pageNumber(comments.getNumber())
+            .pageSize(comments.getSize())
+            .totalPages(comments.getTotalPages())
+            .totalComments((int) comments.getTotalElements()) // long을 int로 형변환
+            .isFirst(comments.isFirst())
+            .isLast(comments.isLast())
+            .build();
     }
 
     @Override
@@ -272,23 +288,32 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public List<ResponseGetBoardByCategory> getBoardsByCategory(String category, int page,
+    public ResponseGetBoardByCategoryWrapper getBoardsByCategory(String category, int page,
         int size) {
         if (page < 1 || size < 1) {
             throw new InvalidBoardRequestError("page>=1, size>=1 이어야 합니다.");
         }
-        Pageable pageable = PageRequest.of(page - 1, size);
-        List<Board> boards = boardRepository.findByCategoryNameOrderByCreatedAtDesc(category,
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<Board> boardPage = boardRepository.findByCategoryNameOrderByCreatedAtDesc(category,
             pageable);
 
-        return boards.stream()
+        List<ResponseGetBoardByCategory> dtoList = boardPage.getContent().stream()
             .map(board -> {
                 ResponseGetBoardByCategory response = modelMapper.map(board,
                     ResponseGetBoardByCategory.class);
-                response.setNickName(board.getMember().getNickname());
                 return response;
             })
             .collect(Collectors.toList());
+
+        return ResponseGetBoardByCategoryWrapper.builder()
+            .content(dtoList)
+            .totalPages(boardPage.getTotalPages())
+            .totalElements(boardPage.getTotalElements())
+            .pageNumber(boardPage.getNumber())
+            .pageSize(boardPage.getSize())
+            .isFirst(boardPage.isFirst())
+            .isLast(boardPage.isLast())
+            .build();
     }
 
     @Override

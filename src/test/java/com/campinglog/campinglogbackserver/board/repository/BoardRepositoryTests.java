@@ -163,13 +163,16 @@ public class BoardRepositoryTests {
     @Test
     void findByCategoryName_success() {
         // when
-        List<Board> list = boardRepository
+        Page<Board> list = boardRepository
             .findByCategoryNameOrderByCreatedAtDesc("후기", PageRequest.of(0, 10));
 
         // then
-        assertThat(list).hasSize(2);
-        assertThat(list.get(0).getCreatedAt()).isAfterOrEqualTo(list.get(1).getCreatedAt());
-        assertThat(list).allSatisfy(b -> assertThat(b.getCategoryName()).isEqualTo("후기"));
+
+        List<Board> content = list.getContent();
+
+        assertThat(content).hasSize(2);
+        assertThat(content.get(0).getCreatedAt()).isAfterOrEqualTo(content.get(1).getCreatedAt());
+        assertThat(content).allSatisfy(b -> assertThat(b.getCategoryName()).isEqualTo("후기"));
     }
 
     @Test
@@ -178,7 +181,7 @@ public class BoardRepositoryTests {
         String category = "공지";
 
         // when
-        List<Board> list = boardRepository
+        Page<Board> list = boardRepository
             .findByCategoryNameOrderByCreatedAtDesc(category, PageRequest.of(0, 10));
 
         // then
