@@ -3,12 +3,9 @@ package com.campinglog.campinglogbackserver.campinfo.dto.response;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.List;
-import java.util.Map;
-
 @Builder
 @Data
-public class ResponseGetCampListLatest {
+public class ResponseGetCampLatestList {
     private String facltNm;
     private String doNm;
     private String sigunguNm;

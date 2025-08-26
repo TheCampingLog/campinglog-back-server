@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Builder
 @Data
-public class ResponseGetMyReview {
+public class ResponseGetMyReviewList {
   private String reviewContent; //review
   private double reviewScore; //review
   private String facltNm;     //외부 api

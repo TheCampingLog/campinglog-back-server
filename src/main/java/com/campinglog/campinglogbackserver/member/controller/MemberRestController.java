@@ -1,13 +1,13 @@
 package com.campinglog.campinglogbackserver.member.controller;
 
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetMyReviewWrapper;
+import com.campinglog.campinglogbackserver.campinfo.service.CampInfoService;
 import com.campinglog.campinglogbackserver.member.dto.request.*;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestChangePassword;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestUpdateMember;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestVerifyPassword;
-import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
-import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
-import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberProfileImage;
+import com.campinglog.campinglogbackserver.member.dto.response.*;
 import com.campinglog.campinglogbackserver.member.service.MemberService;
 import jakarta.validation.Valid;
 
@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class MemberRestController {
 
   private final MemberService memberService;
+  private final CampInfoService campInfoService;
 
   @PostMapping
   public ResponseEntity<Map<String, String>> addMember(
@@ -76,6 +78,22 @@ public class MemberRestController {
           @RequestParam(name = "pageNo", defaultValue = "1") int pageNo
   ) {
     return ResponseEntity.ok(memberService.getBoards(email, pageNo));
+  }
+
+  @GetMapping("/mypage/comments")
+  public ResponseEntity<ResponseGetMemberCommentList> getComments(
+          @AuthenticationPrincipal String email,
+          @RequestParam(name = "pageNo", defaultValue = "1") int pageNo
+  ) {
+    return ResponseEntity.ok(memberService.getComments(email, pageNo));
+  }
+
+  @GetMapping("/mypage/reviews")
+  public ResponseEntity<Mono<ResponseGetMyReviewWrapper>> getReviews(
+          @AuthenticationPrincipal String email,
+          @RequestParam(name = "pageNo", defaultValue = "1") int pageNo,
+          @RequestParam(name = "size", defaultValue = "4") int size) {
+    return ResponseEntity.ok(campInfoService.getMyReviews(email, pageNo, size));
   }
 
   @GetMapping("/mypage/profile-image")

@@ -1,6 +1,7 @@
 package com.campinglog.campinglogbackserver.member.entity;
 
 import com.campinglog.campinglogbackserver.board.entity.Board;
+import com.campinglog.campinglogbackserver.board.entity.Comment;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -72,5 +73,8 @@ public class Member {
   }
   @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Board> boards = new ArrayList<>();
+
+  @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Comment> comments = new ArrayList<>();
 
 }
