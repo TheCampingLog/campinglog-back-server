@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Builder
 @Data
-public class ResponseGetCampByKeyword {
+public class ResponseGetCampByKeywordList {
   private String facltNm;
   private String doNm;
   private String sigunguNm;
@@ -17,5 +17,4 @@ public class ResponseGetCampByKeyword {
   private String tel;
   private String sbrsCl;
   private String firstImageUrl;
-  private int totalCount;
 }

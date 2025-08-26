@@ -3,15 +3,7 @@ package com.campinglog.campinglogbackserver.campinfo.service;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestAddReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestRemoveReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestSetReview;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReview;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReviewRank;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetMyReview;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetMyReviewWrapper;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewList;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewListPage;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.*;
 import com.campinglog.campinglogbackserver.campinfo.entity.ReviewOfBoard;
 import com.campinglog.campinglogbackserver.campinfo.entity.Review;
 import com.campinglog.campinglogbackserver.campinfo.exception.ApiParsingError;
@@ -82,7 +74,7 @@ public class CampInfoServiceImpl implements CampInfoService{
                         .onErrorMap(e -> new CallCampApiError("외부 API 호출 실패: mapX=" + review.getMapX()
                             + ", mapY=" + review.getMapY()))
                         .map(detail -> {
-                            return ResponseGetMyReview.builder()
+                            return ResponseGetMyReviewList.builder()
                                 .id(review.getId())
                                 .reviewScore(review.getReviewScore())
                                 .reviewContent(review.getReviewContent())
@@ -110,7 +102,7 @@ public class CampInfoServiceImpl implements CampInfoService{
     }
 
     @Override
-    public Mono<List<ResponseGetBoardReviewRank>> getBoardReviewRank(int limit) {
+    public Mono<List<ResponseGetBoardReviewRankList>> getBoardReviewRank(int limit) {
         if(limit <= 0) {
             throw new InvalidLimitError("리뷰 래잉 조회 시 limit은 0보다 커야 합니다.");
         }
@@ -125,7 +117,7 @@ public class CampInfoServiceImpl implements CampInfoService{
         return Mono.fromCallable(() ->
             reviewOfBoardRepository.findAllByReviewAverageIsNotNull(pageable)
                 .stream()
-                .map(rank -> ResponseGetBoardReviewRank.builder()
+                .map(rank -> ResponseGetBoardReviewRankList.builder()
                     .reviewAverage(rank.getReviewAverage())
                     .mapY(rank.getMapY())
                     .mapX(rank.getMapX())
@@ -239,7 +231,7 @@ public class CampInfoServiceImpl implements CampInfoService{
     }
 
     @Override
-    public ResponseGetReviewListPage getReviewList(String mapX, String mapY, int page, int size) {
+    public ResponseGetReviewListWrapper getReviewList(String mapX, String mapY, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createAt"));
         Page<Review> reviews = reviewRepository.findByMapXAndMapY(mapX, mapY, pageable);
 
@@ -255,7 +247,7 @@ public class CampInfoServiceImpl implements CampInfoService{
                 .build())
             .toList();
 
-        return ResponseGetReviewListPage.builder()
+        return ResponseGetReviewListWrapper.builder()
             .content(content)
             .page(reviews.getNumber())
             .size(reviews.getSize())
@@ -291,7 +283,7 @@ public class CampInfoServiceImpl implements CampInfoService{
     }
 
     @Override
-    public Mono<List<ResponseGetCampListLatest>> getCampListLatest(int pageNo) {
+    public Mono<ResponseGetCampWrapper<ResponseGetCampLatestList>> getCampListLatest(int pageNo, int size) {
         return campWebClient.get()
             .uri(uri -> uri.path("/basedList")
                 .queryParam("serviceKey", serviceKey)
@@ -299,21 +291,21 @@ public class CampInfoServiceImpl implements CampInfoService{
                 .queryParam("MobileApp", "CampingLog")
                 .queryParam("_type", "json")
                 .queryParam("pageNo", pageNo)
-                .queryParam("numOfRows", 4)
+                .queryParam("numOfRows", size)
                 .build())
             .retrieve()
             .bodyToMono(String.class)
             .timeout(Duration.ofSeconds(6))
             .map(json -> {
                 int total = parseTotalCount(json);
-                List<ResponseGetCampListLatest> list = parseItems(json, ResponseGetCampListLatest.class);
-                list.forEach(item -> item.setTotalCount(total));
-                return list;
+                List<ResponseGetCampLatestList> list = parseItems(json, ResponseGetCampLatestList.class);
+
+                return ResponseGetCampWrapper.<ResponseGetCampLatestList>builder().totalCount(total).items(list).totalPage(total/size).hasNext(total/size > pageNo).page(pageNo).size(size).build();
             });
     }
 
     @Override
-    public Mono<List<ResponseGetCampByKeyword>> getCampByKeyword(String keyword, int pageNo) {
+    public Mono<ResponseGetCampWrapper<ResponseGetCampByKeywordList>> getCampByKeyword(String keyword, int pageNo, int size) {
         return campWebClient.get()
             .uri(uri -> uri.path("/searchList")
                 .queryParam("serviceKey", serviceKey)
@@ -321,7 +313,7 @@ public class CampInfoServiceImpl implements CampInfoService{
                 .queryParam("MobileApp", "CampingLog")
                 .queryParam("_type", "json")
                 .queryParam("pageNo", pageNo)
-                .queryParam("numOfRows", 4)
+                .queryParam("numOfRows", size)
                 .queryParam("keyword", keyword)
                 .build())
             .retrieve()
@@ -329,13 +321,13 @@ public class CampInfoServiceImpl implements CampInfoService{
             .timeout(Duration.ofSeconds(6))
             .map(json -> {
                 int total = parseTotalCount(json);
-                List<ResponseGetCampByKeyword> list = parseItems(json, ResponseGetCampByKeyword.class);
+                List<ResponseGetCampByKeywordList> list = parseItems(json, ResponseGetCampByKeywordList.class);
+
                 if(list.isEmpty()) {
                     throw new NoSearchResultError("검색 결과가 없습니다: keyword=" + keyword);
                 }
 
-                list.forEach(item -> item.setTotalCount(total));
-                return list;
+                return ResponseGetCampWrapper.<ResponseGetCampByKeywordList>builder().totalCount(total).items(list).totalPage(total/size).hasNext(total/size > pageNo).page(pageNo).size(size).build();
             });
     }
 

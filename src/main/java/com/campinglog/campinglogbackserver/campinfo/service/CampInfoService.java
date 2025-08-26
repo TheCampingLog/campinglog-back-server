@@ -1,31 +1,22 @@
 package com.campinglog.campinglogbackserver.campinfo.service;
 
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestAddReview;
-import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestGetBoardReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestRemoveReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestSetReview;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReview;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReviewRank;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetMyReview;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetMyReviewWrapper;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewList;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewListPage;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.*;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 
 public interface CampInfoService {
-    Mono<List<ResponseGetCampListLatest>> getCampListLatest(int pageNo);
+    Mono<ResponseGetCampWrapper<ResponseGetCampLatestList>> getCampListLatest(int pageNo, int size);
     Mono<ResponseGetCampDetail> getCampDetail(String mapX, String mapY);
-    Mono<List<ResponseGetCampByKeyword>> getCampByKeyword(String keyword, int pageNo);
+    Mono<ResponseGetCampWrapper<ResponseGetCampByKeywordList>> getCampByKeyword(String keyword, int pageNo, int size);
     void addReview(RequestAddReview requestAddReview);
     ResponseGetBoardReview getBoardReview(String mapX, String mapY);
     void setReview(RequestSetReview requestSetReview);
     void removeReview(RequestRemoveReview requestRemoveReview);
-    ResponseGetReviewListPage getReviewList(String mapX, String mapY, int page, int size);
-    Mono<List<ResponseGetBoardReviewRank>> getBoardReviewRank(int limit);
+    ResponseGetReviewListWrapper getReviewList(String mapX, String mapY, int pageNo, int size);
+    Mono<List<ResponseGetBoardReviewRankList>> getBoardReviewRank(int limit);
     Mono<ResponseGetMyReviewWrapper> getMyReviews(String email, int pageNo, int size);
 }

@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class ResponseGetBoardReviewRank {
+public class ResponseGetBoardReviewRankList {
   private double reviewAverage;
   private String firstImageUrl;
   private String doNm;
