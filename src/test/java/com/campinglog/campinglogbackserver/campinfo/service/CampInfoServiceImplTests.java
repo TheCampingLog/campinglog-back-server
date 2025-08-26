@@ -7,16 +7,15 @@ import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestAddReview
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestRemoveReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.request.RequestSetReview;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReview;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReviewRank;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeyword;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetBoardReviewRankList;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampByKeywordList;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampDetail;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampListLatest;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetCampLatestList;
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetMyReviewWrapper;
-import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewListPage;
+import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetReviewListWrapper;
 import com.campinglog.campinglogbackserver.campinfo.entity.Review;
 import com.campinglog.campinglogbackserver.campinfo.entity.ReviewOfBoard;
 import com.campinglog.campinglogbackserver.campinfo.exception.ApiParsingError;
-import com.campinglog.campinglogbackserver.campinfo.exception.CallCampApiError;
 import com.campinglog.campinglogbackserver.campinfo.exception.InvalidLimitError;
 import com.campinglog.campinglogbackserver.campinfo.exception.NoExistCampError;
 import com.campinglog.campinglogbackserver.campinfo.exception.NoExistReviewOfBoardError;
@@ -108,7 +107,7 @@ public class CampInfoServiceImplTests {
   @Transactional
   public void getBoardReviewRank_Success() {
     // when
-    List<ResponseGetBoardReviewRank> result = campInfoService.getBoardReviewRank(4).block();
+    List<ResponseGetBoardReviewRankList> result = campInfoService.getBoardReviewRank(4).block();
 
     // then
     assertThat(result).isNotEmpty();
@@ -262,7 +261,7 @@ public class CampInfoServiceImplTests {
     int size = 10;
 
     // when
-    ResponseGetReviewListPage result = campInfoService.getReviewList(mapX, mapY, page, size);
+    ResponseGetReviewListWrapper result = campInfoService.getReviewList(mapX, mapY, page, size);
 
     // then
     assertThat(result).isNotNull();
@@ -278,7 +277,7 @@ public class CampInfoServiceImplTests {
     String mapY = "32.10";
 
     // when
-    ResponseGetReviewListPage result = campInfoService.getReviewList(mapX, mapY, 0, 5);
+    ResponseGetReviewListWrapper result = campInfoService.getReviewList(mapX, mapY, 0, 5);
 
     // then
     assertThat(result).isNotNull();
@@ -328,9 +327,10 @@ public class CampInfoServiceImplTests {
   public void getCampListLatest_Success() {
     // given
     int pageNo = 0;
+    int size = 4;
 
     // when
-    List<ResponseGetCampListLatest> result = campInfoService.getCampListLatest(pageNo).block();
+    List<ResponseGetCampLatestList> result = campInfoService.getCampListLatest(pageNo, size).block().getItems();
 
     // then
     assertThat(result).isNotNull();
@@ -347,7 +347,7 @@ public class CampInfoServiceImplTests {
 
     // when & then
     assertThatThrownBy(() ->
-        service.getCampListLatest(1).block())
+        service.getCampListLatest(1, 4).block())
         .isInstanceOf(ApiParsingError.class);
   }
 
@@ -356,9 +356,10 @@ public class CampInfoServiceImplTests {
     // given
     String keyword = "휴양림";
     int pageNo = 0;
+    int size = 4;
 
     // when
-    List<ResponseGetCampByKeyword> result = campInfoService.getCampByKeyword(keyword, pageNo).block();
+    List<ResponseGetCampByKeywordList> result = campInfoService.getCampByKeyword(keyword, pageNo, size).block().getItems();
 
     // then
     assertThat(result).isNotNull();
@@ -370,9 +371,10 @@ public class CampInfoServiceImplTests {
     // given
     String keyword = "헬스";
     int pageNo = 0;
+    int size = 4;
 
     // when & then
-    assertThatThrownBy(() -> campInfoService.getCampByKeyword(keyword, pageNo).block())
+    assertThatThrownBy(() -> campInfoService.getCampByKeyword(keyword, pageNo, size).block())
         .isInstanceOf(NoSearchResultError.class);
   }
 
