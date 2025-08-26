@@ -6,10 +6,12 @@ import com.campinglog.campinglogbackserver.board.dto.request.RequestAddLike;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetComment;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategory;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategoryWrapper;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetComments;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetCommentsWrapper;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetLike;
 import com.campinglog.campinglogbackserver.board.entity.Board;
 import com.campinglog.campinglogbackserver.board.entity.BoardLike;
@@ -20,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -33,7 +36,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/boards")
@@ -110,20 +113,22 @@ public class BoardRestController {
     }
 
     @GetMapping("/category")
-    public ResponseEntity<List<ResponseGetBoardByCategory>> getBoardsByCategory(
+    public ResponseEntity<ResponseGetBoardByCategoryWrapper> getBoardsByCategory(
         @RequestParam String category, @RequestParam(required = false, defaultValue = "1") int page,
         @RequestParam(required = false, defaultValue = "3") int size) {
-        List<ResponseGetBoardByCategory> result = boardService.getBoardsByCategory(category, page,
+        ResponseGetBoardByCategoryWrapper result = boardService.getBoardsByCategory(category, page,
             size);
         return ResponseEntity.ok(result);
 
     }
 
     @GetMapping("/{boardId}/comments")
-    public ResponseEntity<List<ResponseGetComments>> getComments(@PathVariable String boardId,
+    public ResponseEntity<ResponseGetCommentsWrapper> getComments(@PathVariable String boardId,
         @RequestParam(required = false, defaultValue = "1") int page,
         @RequestParam(required = false, defaultValue = "3") int size) {
-        List<ResponseGetComments> result = boardService.getComments(boardId, page, size);
+
+        log.info("[Controller] getComments 호출됨. page={}, size={}", page, size);
+        ResponseGetCommentsWrapper result = boardService.getComments(boardId, page, size);
         return ResponseEntity.ok(result);
     }
 

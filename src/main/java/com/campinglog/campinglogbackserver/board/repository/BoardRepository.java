@@ -29,7 +29,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     List<Board> findByTitleContainingOrderByCreatedAtDesc(String title, Pageable pageable);
 
     @EntityGraph(attributePaths = "member")
-    List<Board> findByCategoryNameOrderByCreatedAtDesc(String categoryName, Pageable pageable);
+    Page<Board> findByCategoryNameOrderByCreatedAtDesc(String categoryName, Pageable pageable);
 
     // 회원별 좋아요 합계 (글 없는 회원도 포함하려면 LEFT JOIN으로 Member 시작)
     @Query("""

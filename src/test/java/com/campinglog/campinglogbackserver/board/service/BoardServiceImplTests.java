@@ -9,10 +9,12 @@ import com.campinglog.campinglogbackserver.board.dto.request.RequestAddLike;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetComment;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategory;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategoryWrapper;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetComments;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetCommentsWrapper;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetLike;
 import com.campinglog.campinglogbackserver.board.entity.Board;
 import com.campinglog.campinglogbackserver.board.entity.Comment;
@@ -200,8 +202,8 @@ public class BoardServiceImplTests {
 
     @Test
     void getBoardsByCategory_latest() {
-        List<ResponseGetBoardByCategory> res = boardService.getBoardsByCategory("후기", 1, 10);
-        assertThat(res).extracting(ResponseGetBoardByCategory::getBoardId)
+        ResponseGetBoardByCategoryWrapper res = boardService.getBoardsByCategory("후기", 1, 10);
+        assertThat(res.getContent()).extracting(ResponseGetBoardByCategory::getBoardId)
             .containsExactly(boardAId);
     }
 
@@ -218,8 +220,10 @@ public class BoardServiceImplTests {
         // update
         boardService.updateComment(boardAId, savedCommentId,
             RequestSetComment.builder().content("수정").build());
+        ResponseGetCommentsWrapper wrapper = boardService.getComments(boardAId, 1, 10);
 
-        List<ResponseGetComments> list = boardService.getComments(boardAId, 1, 10);
+        List<ResponseGetComments> list = wrapper.getContent();
+
         assertThat(list).anySatisfy(c -> {
             if (c.getCommentId().equals(savedCommentId)) {
                 assertThat(c.getContent()).isEqualTo("수정");
@@ -262,8 +266,11 @@ public class BoardServiceImplTests {
         boardService.addComment(boardAId, RequestAddComment.builder()
             .content("3").email(m1.getEmail()).build());
 
-        List<ResponseGetComments> page1 = boardService.getComments(boardAId, 1, 2);
-        List<ResponseGetComments> page2 = boardService.getComments(boardAId, 2, 2);
+        ResponseGetCommentsWrapper wrapper1 = boardService.getComments(boardAId, 1, 2);
+        ResponseGetCommentsWrapper wrapper2 = boardService.getComments(boardAId, 2, 2);
+
+        List<ResponseGetComments> page1 = wrapper1.getContent();
+        List<ResponseGetComments> page2 = wrapper2.getContent();
 
         assertThat(page1).hasSize(2);
         assertThat(page2).hasSize(1);

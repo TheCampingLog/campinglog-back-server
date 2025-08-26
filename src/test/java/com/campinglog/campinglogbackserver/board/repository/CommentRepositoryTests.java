@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 @DataJpaTest
@@ -111,10 +112,12 @@ public class CommentRepositoryTests {
     @Test
     void findByBoardId_descOrder_paging() {
         // when
-        List<Comment> page = commentRepository.findByBoard_IdOrderByCreatedAtDescIdDesc(
+        Page<Comment> list = commentRepository.findByBoard_IdOrderByCreatedAtDescIdDesc(
             board1.getId(), PageRequest.of(0, 2));
 
         // then
+        List<Comment> page = list.getContent();
+
         assertThat(page).hasSize(2);
         assertThat(page.get(0).getCommentId()).isEqualTo("c_003"); // -1h
         assertThat(page.get(1).getCommentId()).isEqualTo("c_002"); // -2h
@@ -126,10 +129,12 @@ public class CommentRepositoryTests {
     @Test
     void findByBoardId_descOrder_nextPage() {
         // when
-        List<Comment> page = commentRepository.findByBoard_IdOrderByCreatedAtDescIdDesc(
+        Page<Comment> list = commentRepository.findByBoard_IdOrderByCreatedAtDescIdDesc(
             board1.getId(), PageRequest.of(1, 2));
 
         // then
+        List<Comment> page = list.getContent();
+
         assertThat(page).hasSize(1);
         assertThat(page.get(0).getCommentId()).isEqualTo("c_001"); // -3h
     }
@@ -137,7 +142,7 @@ public class CommentRepositoryTests {
     @Test
     void findByBoardId_noComments_returnsEmpty() {
         // when
-        List<Comment> page = commentRepository.findByBoard_IdOrderByCreatedAtDescIdDesc(
+        Page<Comment> page = commentRepository.findByBoard_IdOrderByCreatedAtDescIdDesc(
             board2.getId(), PageRequest.of(0, 10));
 
         // then
@@ -150,7 +155,7 @@ public class CommentRepositoryTests {
         Long notExistsBoardPk = 999_999L;
 
         // when
-        List<Comment> page = commentRepository.findByBoard_IdOrderByCreatedAtDescIdDesc(
+        Page<Comment> page = commentRepository.findByBoard_IdOrderByCreatedAtDescIdDesc(
             notExistsBoardPk, PageRequest.of(0, 10));
 
         // then
