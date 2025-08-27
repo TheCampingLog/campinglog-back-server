@@ -38,8 +38,8 @@ public class CampInfoRestController {
         return ResponseEntity.ok(campInfoService.getCampDetail(mapX, mapY));
     }
 
-    @GetMapping("/keyword/{keyword}")
-    public ResponseEntity<Mono<ResponseGetCampWrapper<ResponseGetCampByKeywordList>>> getCampByKeyword(@PathVariable String keyword, @RequestParam(defaultValue = "1") int pageNo, @RequestParam(defaultValue = "4") int size) {
+    @GetMapping("/keyword")
+    public ResponseEntity<Mono<ResponseGetCampWrapper<ResponseGetCampByKeywordList>>> getCampByKeyword(@RequestParam String keyword, @RequestParam(defaultValue = "1") int pageNo, @RequestParam(defaultValue = "4") int size) {
         return ResponseEntity.ok(campInfoService.getCampByKeyword(keyword, pageNo, size));
     }
 

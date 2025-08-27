@@ -55,7 +55,10 @@ public class CampInfoServiceImpl implements CampInfoService{
     public ResponseGetBoardReview getBoardReview(String mapX, String mapY) {
         ReviewOfBoard reviewOfBoard = reviewOfBoardRepository.findByMapXAndMapY(mapX, mapY);
         if(reviewOfBoard == null) {
-            throw new NoExistReviewOfBoardError("리뷰 집계가 없습니다: mapX=" + mapX + ", mapY=" + mapY);
+            return ResponseGetBoardReview.builder()
+                    .reviewAverage(0.0)
+                    .reviewCount(0)
+                    .build();
         }
         return ResponseGetBoardReview.builder()
             .reviewAverage(reviewOfBoard.getReviewAverage())
