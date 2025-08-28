@@ -11,6 +11,7 @@ import com.campinglog.campinglogbackserver.board.dto.request.RequestSetComment;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategory;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategoryWrapper;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeywordWrapper;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetComments;
@@ -152,7 +153,7 @@ public class BoardServiceImplTests {
     void getBoardDetail_increaseView() {
         long before = boardRepository.findByBoardId(boardAId).orElseThrow().getViewCount();
 
-        ResponseGetBoardDetail dto = boardService.getBoardDetail(boardAId);
+        ResponseGetBoardDetail dto = boardService.getBoardDetail(boardAId, m1.getEmail());
 
         Board after = boardRepository.findByBoardId(boardAId).orElseThrow();
         assertThat(after.getViewCount()).isEqualTo(before + 1);
@@ -163,7 +164,7 @@ public class BoardServiceImplTests {
 
     @Test
     void getBoardDetail_notFound_throws() {
-        assertThatThrownBy(() -> boardService.getBoardDetail("NOPE"))
+        assertThatThrownBy(() -> boardService.getBoardDetail("NOPE", "test.com"))
             .isInstanceOf(BoardNotFoundError.class);
     }
 
@@ -181,8 +182,8 @@ public class BoardServiceImplTests {
 
     @Test
     void getBoardRank_weekTopN() {
-        boardService.getBoardDetail(boardAId);
-        boardService.getBoardDetail(boardAId);
+        boardService.getBoardDetail(boardAId, m1.getEmail());
+        boardService.getBoardDetail(boardAId, m2.getEmail());
         boardService.addLike(boardAId, RequestAddLike.builder().email(m1.getEmail()).build());
         boardService.addLike(boardAId, RequestAddLike.builder().email(m2.getEmail()).build());
 
@@ -195,8 +196,8 @@ public class BoardServiceImplTests {
 
     @Test
     void searchBoards_byKeyword_latest() {
-        List<ResponseGetBoardByKeyword> res = boardService.searchBoards("장비", 1, 10);
-        assertThat(res).extracting(ResponseGetBoardByKeyword::getBoardId)
+        ResponseGetBoardByKeywordWrapper res = boardService.searchBoards("장비", 1, 10);
+        assertThat(res.getContent()).extracting(ResponseGetBoardByKeyword::getBoardId)
             .containsExactly(boardBId);
     }
 

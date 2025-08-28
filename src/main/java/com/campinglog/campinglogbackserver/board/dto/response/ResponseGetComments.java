@@ -14,6 +14,7 @@ public class ResponseGetComments {
     private String content;
     private String nickname;
     private String createdAt;
+    private String email;
 
 }
 

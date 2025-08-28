@@ -20,5 +20,6 @@ public class ResponseGetBoardByKeyword {
     private String boardImage;
     private String createdAt;
     private String nickName;
+    private String keyword;
 
 }

@@ -8,11 +8,13 @@ import com.campinglog.campinglogbackserver.board.dto.request.RequestSetComment;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategory;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategoryWrapper;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeywordWrapper;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetComments;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetCommentsWrapper;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetLike;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseToggleLike;
 import com.campinglog.campinglogbackserver.board.entity.Board;
 import com.campinglog.campinglogbackserver.board.entity.BoardLike;
 import com.campinglog.campinglogbackserver.board.entity.Comment;
@@ -135,36 +137,49 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public ResponseGetBoardDetail getBoardDetail(String boardId) {
+    public ResponseGetBoardDetail getBoardDetail(String boardId, String userEmail) {
         Board board = getBoardOrThrow(boardId);
 
         board.setViewCount(board.getViewCount() + 1);
         boardRepository.save(board);
 
+        boolean isLiked = false;
+        if (userEmail != null && !userEmail.isBlank()) {
+            isLiked = likeRepository.existsByBoard_IdAndMember_Email(board.getId(), userEmail);
+        }
+
         ResponseGetBoardDetail response = modelMapper.map(board, ResponseGetBoardDetail.class);
         response.setNickname(board.getMember().getNickname());
         response.setEmail(board.getMember().getEmail());
+        response.setLiked(isLiked);
         return response;
     }
 
     @Override
-    public List<ResponseGetBoardByKeyword> searchBoards(String keyword, int page, int size) {
+    public ResponseGetBoardByKeywordWrapper searchBoards(String keyword, int page, int size) {
         if (page < 1 || size < 1) {
             throw new InvalidBoardRequestError("page>=1, size>=1 이어야 합니다.");
         }
         Pageable pageable = PageRequest.of(page - 1, size);
 
-        List<Board> boards = boardRepository.findByTitleContainingOrderByCreatedAtDesc(keyword,
+        Page<Board> boards = boardRepository.findByTitleContainingOrderByCreatedAtDesc(keyword,
             pageable);
 
-        return boards.stream()
-            .map(board -> {
-                ResponseGetBoardByKeyword response = modelMapper.map(board,
-                    ResponseGetBoardByKeyword.class);
-                response.setNickName(board.getMember().getNickname());
-                return response;
-            })
-            .collect(Collectors.toList());
+        List<ResponseGetBoardByKeyword> dtoList = boards.getContent().stream().map(board -> {
+            ResponseGetBoardByKeyword response = modelMapper.map(board,
+                ResponseGetBoardByKeyword.class);
+            return response;
+        }).collect(Collectors.toList());
+        return ResponseGetBoardByKeywordWrapper.builder()
+            .content(dtoList)
+            .pageNumber(boards.getNumber())
+            .pageSize(boards.getSize())
+            .totalPages(boards.getTotalPages())
+            .isFirst(boards.isFirst())
+            .isLast(boards.isLast())
+            .build();
+
+
     }
 
     @Override
@@ -260,31 +275,25 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public BoardLike addLike(String boardId, RequestAddLike requestAddLike) {
+    public ResponseToggleLike addLike(String boardId, RequestAddLike requestAddLike) {
 
         Board board = getBoardOrThrow(boardId);
-        Long boardIdPk = board.getId();
-
         Member member = getMemberOrThrow(requestAddLike.getEmail());
 
-        boolean alreadyLiked = likeRepository.existsByBoard_IdAndMember_Email(
-            boardIdPk, requestAddLike.getEmail());
-
-        if (alreadyLiked) {
+        if (likeRepository.existsByBoard_IdAndMember_Email(board.getId(),
+            requestAddLike.getEmail())) {
             throw new AlreadyLikedError("이미 좋아요 누른 게시글");
         }
 
-        BoardLike boardLike = modelMapper.map(requestAddLike, BoardLike.class);
-        boardLike.setBoard(board);
-        boardLike.setMember(member);
-
-        BoardLike saved = likeRepository.save(boardLike);
+        BoardLike boardLike = BoardLike.builder().board(board).member(member).build();
+        likeRepository.save(boardLike);
 
         board.setLikeCount(board.getLikeCount() + 1);
-        boardRepository.save(board);
 
-        return saved;
-
+        return ResponseToggleLike.builder()
+            .isLiked(true)
+            .likeCount(board.getLikeCount())
+            .build();
     }
 
     @Override
@@ -327,10 +336,9 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public void deleteLike(String boardId, String email) {
-        Long boardIdPk = getBoardPkOrThrow(boardId);
-
-        BoardLike boardLike = likeRepository.findByBoard_IdAndMember_Email(boardIdPk, email)
+    public ResponseToggleLike deleteLike(String boardId, String email) {
+        BoardLike boardLike = likeRepository.findByBoard_IdAndMember_Email(
+                getBoardPkOrThrow(boardId), email)
             .orElseThrow(() -> new NotLikedError("좋아요하지 않은 게시글입니다."));
 
         likeRepository.delete(boardLike);
@@ -338,8 +346,11 @@ public class BoardServiceImpl implements BoardService {
         Board board = boardLike.getBoard();
         if (board.getLikeCount() > 0) {
             board.setLikeCount(board.getLikeCount() - 1);
-            boardRepository.save(board);
         }
 
+        return ResponseToggleLike.builder()
+            .isLiked(false)
+            .likeCount(board.getLikeCount())
+            .build();
     }
 }
