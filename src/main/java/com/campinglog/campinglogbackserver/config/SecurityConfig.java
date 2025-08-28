@@ -76,6 +76,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, "/api/boards").hasRole("USER")
             .requestMatchers(HttpMethod.PUT, "/api/boards/*").hasRole("USER")
             .requestMatchers(HttpMethod.DELETE, "/api/boards/*").hasRole("USER")
+            .requestMatchers(HttpMethod.DELETE, "/api/members/*").hasRole("USER")
             .requestMatchers(HttpMethod.POST, "/api/boards/*/comments").hasRole("USER")
             .requestMatchers(HttpMethod.POST, "/api/boards/*/likes").hasRole("USER")
             .requestMatchers(HttpMethod.GET, "/api/members/mypage").hasRole("USER")
