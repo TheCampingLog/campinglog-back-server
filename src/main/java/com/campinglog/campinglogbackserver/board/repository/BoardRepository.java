@@ -26,7 +26,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
         LocalDateTime from, Pageable pageable);
 
     @EntityGraph(attributePaths = "member")
-    List<Board> findByTitleContainingOrderByCreatedAtDesc(String title, Pageable pageable);
+    Page<Board> findByTitleContainingOrderByCreatedAtDesc(String title, Pageable pageable);
 
     @EntityGraph(attributePaths = "member")
     Page<Board> findByCategoryNameOrderByCreatedAtDesc(String categoryName, Pageable pageable);

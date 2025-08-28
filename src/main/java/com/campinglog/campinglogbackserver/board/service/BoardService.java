@@ -8,11 +8,13 @@ import com.campinglog.campinglogbackserver.board.dto.request.RequestSetComment;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategory;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategoryWrapper;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeywordWrapper;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetComments;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetCommentsWrapper;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetLike;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseToggleLike;
 import com.campinglog.campinglogbackserver.board.entity.Board;
 import com.campinglog.campinglogbackserver.board.entity.BoardLike;
 import com.campinglog.campinglogbackserver.board.entity.Comment;
@@ -28,21 +30,21 @@ public interface BoardService {
 
     List<ResponseGetBoardRank> getBoardRank(int limit);
 
-    ResponseGetBoardDetail getBoardDetail(String boardId);
+    ResponseGetBoardDetail getBoardDetail(String boardId, String email);
 
-    List<ResponseGetBoardByKeyword> searchBoards(String keyword, int page, int size);
+    ResponseGetBoardByKeywordWrapper searchBoards(String keyword, int page, int size);
 
     Comment addComment(String boardId, RequestAddComment requestAddComment);
 
     ResponseGetCommentsWrapper getComments(String boardId, int page, int size);
 
-    BoardLike addLike(String boardId, RequestAddLike requestAddLike);
+    ResponseToggleLike addLike(String boardId, RequestAddLike requestAddLike);
 
     ResponseGetBoardByCategoryWrapper getBoardsByCategory(String category, int page, int size);
 
     ResponseGetLike getLikes(String boardId);
 
-    void deleteLike(String boardId, String email);
+    ResponseToggleLike deleteLike(String boardId, String email);
 
     void updateComment(String boardId, String commentId, RequestSetComment requestSetComment);
 

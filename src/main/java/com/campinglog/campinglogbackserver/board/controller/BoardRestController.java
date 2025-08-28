@@ -5,16 +5,14 @@ import com.campinglog.campinglogbackserver.board.dto.request.RequestAddComment;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddLike;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetComment;
-import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategory;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategoryWrapper;
-import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeywordWrapper;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
-import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetComments;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetCommentsWrapper;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetLike;
+import com.campinglog.campinglogbackserver.board.dto.response.ResponseToggleLike;
 import com.campinglog.campinglogbackserver.board.entity.Board;
-import com.campinglog.campinglogbackserver.board.entity.BoardLike;
 import com.campinglog.campinglogbackserver.board.entity.Comment;
 import com.campinglog.campinglogbackserver.board.service.BoardService;
 import jakarta.validation.Valid;
@@ -36,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -83,17 +82,18 @@ public class BoardRestController {
     }
 
     @GetMapping("/{boardId}")
-    public ResponseEntity<ResponseGetBoardDetail> getBoardDetail(@PathVariable String boardId) {
-        ResponseGetBoardDetail result = boardService.getBoardDetail(boardId);
+    public ResponseEntity<ResponseGetBoardDetail> getBoardDetail(@PathVariable String boardId,
+        @AuthenticationPrincipal String email) {
+        ResponseGetBoardDetail result = boardService.getBoardDetail(boardId, email);
         return ResponseEntity.ok(result);
     }
 
 
     @GetMapping("/search")
-    public ResponseEntity<List<ResponseGetBoardByKeyword>> searchBoards(
+    public ResponseEntity<ResponseGetBoardByKeywordWrapper> searchBoards(
         @RequestParam String keyword, @RequestParam(required = false, defaultValue = "1") int page,
         @RequestParam(required = false, defaultValue = "3") int size) {
-        List<ResponseGetBoardByKeyword> result = boardService.searchBoards(keyword, page, size);
+        ResponseGetBoardByKeywordWrapper result = boardService.searchBoards(keyword, page, size);
         return ResponseEntity.ok(result);
     }
 
@@ -157,17 +157,13 @@ public class BoardRestController {
     }
 
     @PostMapping("/{boardId}/likes")
-    public ResponseEntity<Map<String, String>> addLike(
+    public ResponseEntity<ResponseToggleLike> addLike(
         @AuthenticationPrincipal String email, @PathVariable String boardId,
         @Valid @RequestBody RequestAddLike requestAddLike) {
         requestAddLike.setEmail(email);
-        BoardLike saved = boardService.addLike(boardId, requestAddLike);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "좋아요가 추가되었습니다.");
-        response.put("boarId", boardId);
-        response.put("likeId", saved.getLikeId());
+        ResponseToggleLike result = boardService.addLike(boardId, requestAddLike);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     @GetMapping("/{boardId}/likes")
@@ -177,12 +173,10 @@ public class BoardRestController {
     }
 
     @DeleteMapping("/{boardId}/likes")
-    public ResponseEntity<Map<String, String>> deleteLike(
+    public ResponseEntity<ResponseToggleLike> deleteLike(
         @AuthenticationPrincipal String email, @PathVariable String boardId) {
-        boardService.deleteLike(boardId, email);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "좋아요가 취소되었습니다.");
-        return ResponseEntity.ok(response);
+        ResponseToggleLike result = boardService.deleteLike(boardId, email);
+        return ResponseEntity.ok(result);
     }
 
 

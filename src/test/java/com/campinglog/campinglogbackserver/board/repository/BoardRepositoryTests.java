@@ -139,12 +139,12 @@ public class BoardRepositoryTests {
     @Test
     void findByTitleContaining_success() {
         // when
-        List<Board> list = boardRepository
+        Page<Board> list = boardRepository
             .findByTitleContainingOrderByCreatedAtDesc("테스트", PageRequest.of(0, 10));
 
         // then
         assertThat(list).hasSize(2);
-        assertThat(list.get(0).getCreatedAt()).isAfter(list.get(1).getCreatedAt());
+        assertThat(list.getContent().get(0).getCreatedAt()).isAfter(list.getContent().get(1).getCreatedAt());
     }
 
     @Test
@@ -153,7 +153,7 @@ public class BoardRepositoryTests {
         String keyword = "없는키워드";
 
         // when
-        List<Board> list = boardRepository
+        Page<Board> list = boardRepository
             .findByTitleContainingOrderByCreatedAtDesc(keyword, PageRequest.of(0, 10));
 
         // then

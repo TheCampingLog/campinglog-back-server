@@ -1,5 +1,6 @@
 package com.campinglog.campinglogbackserver.board.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,6 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class ResponseGetBoardDetail {
+
     private String boardId;
     private String boardImage;
     private String title;
@@ -20,5 +22,6 @@ public class ResponseGetBoardDetail {
     private int commentCount;
     private String createdAt;
     private String email;
-
+    @JsonProperty("isLiked")
+    private boolean isLiked;
 }
