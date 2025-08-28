@@ -2,12 +2,18 @@ package com.campinglog.campinglogbackserver.member.entity;
 
 import com.campinglog.campinglogbackserver.board.entity.Board;
 import com.campinglog.campinglogbackserver.board.entity.Comment;
-import jakarta.persistence.*;
-
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -45,6 +51,8 @@ public class Member {
   MemberGrade memberGrade;
   @Column(name = "join_date", nullable = false)
   LocalDate joinDate;
+  @Column(name = "oauth", nullable = false)
+  Boolean oauth;
 
   @PrePersist
   public void prePersist() {
@@ -61,6 +69,10 @@ public class Member {
       this.joinDate = LocalDate.now();
     }
 
+    if (this.oauth == null) {
+      this.oauth = false;
+    }
+
   }
 
   public enum Role {
@@ -71,6 +83,7 @@ public class Member {
   public enum MemberGrade {
     GREEN, BLUE, RED, BLACK
   }
+
   @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Board> boards = new ArrayList<>();
 
