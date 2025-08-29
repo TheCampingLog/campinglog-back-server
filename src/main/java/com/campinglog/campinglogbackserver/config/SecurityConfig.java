@@ -82,6 +82,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/api/members/mypage").hasRole("USER")
             .requestMatchers(HttpMethod.POST, "/api/members/mypage/verifyPassword").hasRole("USER")
             .requestMatchers(HttpMethod.PUT, "/api/members/grade").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/members/rank").permitAll()
             .requestMatchers("/api/members/test").hasAnyRole("USER")
             .requestMatchers("/api/camps/members/**").hasRole("USER")
             .requestMatchers("/api/camps/**").permitAll()
