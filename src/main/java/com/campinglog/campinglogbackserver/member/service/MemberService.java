@@ -5,10 +5,7 @@ import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestChangePassword;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestUpdateMember;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestVerifyPassword;
-import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMember;
-import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberBoardList;
-import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberCommentList;
-import com.campinglog.campinglogbackserver.member.dto.response.ResponseGetMemberProfileImage;
+import com.campinglog.campinglogbackserver.member.dto.response.*;
 import jakarta.validation.Valid;
 
 import java.util.List;
@@ -20,6 +17,7 @@ public interface MemberService {
   public void addProfileImage(String email, @Valid RequestSetProfileImage request);
 
   public ResponseGetMember getMember(String email);
+  public ResponseGetMemberActivity getMemberActivity(String email);
   public ResponseGetMemberBoardList getBoards(String email, int pageNo);
   public ResponseGetMemberCommentList getComments(String email, int pageNo);
   public ResponseGetMemberProfileImage getProfileImage(String email);

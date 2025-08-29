@@ -72,6 +72,25 @@ public class MemberServiceImpl implements MemberService {
   }
 
   @Override
+  public ResponseGetMemberActivity getMemberActivity(String email) {
+    long boardCount   = memberRepository.countMyBoards(email);
+    long commentCount = memberRepository.countMyComments(email);
+    long reviewCount  = memberRepository.countMyReviews(email);
+
+    long likeCount = memberRepository.sumLikesGroupByMember().stream()
+            .filter(s -> s.getMemberId().equals(email))
+            .mapToLong(MemberLikeSummary::getTotalLikes)
+            .findFirst()
+            .orElse(0L);
+
+    ResponseGetMemberActivity summary = new ResponseGetMemberActivity(
+            email, boardCount, commentCount, reviewCount, likeCount
+    );
+
+    return modelMapper.map(summary, ResponseGetMemberActivity.class);
+  }
+
+  @Override
   @Transactional(readOnly = true)
   public ResponseGetMemberBoardList getBoards(String email, int pageNo) {
     int pageIndex = Math.max(pageNo - 1, 0); // 1-based → 0-based

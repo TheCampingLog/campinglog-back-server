@@ -72,6 +72,12 @@ public class MemberRestController {
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
+  @GetMapping("/mypage/summary")
+  public ResponseEntity<ResponseGetMemberActivity> getMySummary(@AuthenticationPrincipal String email) {
+    ResponseGetMemberActivity summary = memberService.getMemberActivity(email);
+    return ResponseEntity.ok(summary);
+  }
+
   @GetMapping("/mypage/boards")
   public ResponseEntity<ResponseGetMemberBoardList> getBoards(
           @AuthenticationPrincipal String email,

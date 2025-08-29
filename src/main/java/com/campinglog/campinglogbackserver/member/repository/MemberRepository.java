@@ -71,4 +71,32 @@ public interface MemberRepository extends JpaRepository<Member, String> {
     String getProfileImage();
     Long getTotalLikes();
   }
+
+  // 게시글 갯수
+  @Query("""
+    select count(b)
+    from Board b
+    join b.member m
+    where m.email = :email
+""")
+  long countMyBoards(@Param("email") String email);
+
+  // 댓글 갯수
+  @Query("""
+    select count(c)
+    from Comment c
+    join c.member m
+    where m.email = :email
+""")
+  long countMyComments(@Param("email") String email);
+
+  // 리뷰 갯수
+  @Query("""
+    select count(r)
+    from Review r
+    join r.member m
+    where m.email = :email
+""")
+  long countMyReviews(@Param("email") String email);
+
 }
