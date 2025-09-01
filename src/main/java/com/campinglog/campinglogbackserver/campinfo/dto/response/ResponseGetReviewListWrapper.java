@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 @Builder
 public class ResponseGetReviewListWrapper {
-  private List<ResponseGetReviewList> content;
+  private List<ResponseGetReviewList> items;
   private int page;
   private int size;
   private boolean hasNext;

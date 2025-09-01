@@ -251,7 +251,7 @@ public class CampInfoServiceImpl implements CampInfoService{
             .toList();
 
         return ResponseGetReviewListWrapper.builder()
-            .content(content)
+            .items(content)
             .page(reviews.getNumber())
             .size(reviews.getSize())
             .hasNext(reviews.hasNext())
