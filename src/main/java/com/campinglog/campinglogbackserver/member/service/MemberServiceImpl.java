@@ -221,6 +221,7 @@ public class MemberServiceImpl implements MemberService {
               item.put("nickname", r.getNickname());
               item.put("profileImage", r.getProfileImage());
               item.put("totalLikes", r.getTotalLikes());
+              item.put("memberGrade", r.getMemberGrade());
               result.add(item);
             });
 

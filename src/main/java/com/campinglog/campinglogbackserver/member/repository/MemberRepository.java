@@ -52,12 +52,13 @@ public interface MemberRepository extends JpaRepository<Member, String> {
       SELECT m.email        AS email,
              m.nickname     AS nickname,
              m.profileImage AS profileImage,
+             m.memberGrade AS memberGrade,
              COUNT(l)       AS totalLikes
       FROM BoardLike l
         JOIN l.board b
         JOIN b.member m
       WHERE l.createdAt >= :start AND l.createdAt < :end
-      GROUP BY m.email, m.nickname, m.profileImage
+      GROUP BY m.email, m.nickname, m.profileImage, m.memberGrade
       ORDER BY COUNT(l) DESC
     """)
   List<WeeklyLikeAggRow> findTopMembersByLikeCreatedAt(
@@ -70,6 +71,7 @@ public interface MemberRepository extends JpaRepository<Member, String> {
     String getNickname();
     String getProfileImage();
     Long getTotalLikes();
+    String getMemberGrade();
   }
 
   // 게시글 갯수
