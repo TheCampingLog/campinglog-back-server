@@ -265,7 +265,7 @@ public class CampInfoServiceImplTests {
 
     // then
     assertThat(result).isNotNull();
-    assertThat(result.getContent()).hasSize(1);
+    assertThat(result.getItems()).hasSize(1);
   }
 
 
@@ -281,7 +281,7 @@ public class CampInfoServiceImplTests {
 
     // then
     assertThat(result).isNotNull();
-    assertThat(result.getContent()).isEmpty();
+    assertThat(result.getItems()).isEmpty();
 
   }
 

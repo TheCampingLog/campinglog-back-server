@@ -124,7 +124,7 @@ public class BoardServiceImpl implements BoardService {
         LocalDateTime weekAgo = LocalDateTime.now().minusWeeks(1);
         Pageable pageable = PageRequest.of(0, limit);
 
-        List<Board> boards = boardRepository.findByCreatedAtAfterOrderByLikeCountDescViewCountDescCreatedAtDesc(
+        Page<Board> boards = boardRepository.findByCreatedAtAfter(
             weekAgo, pageable);
 
         return boards.stream()
@@ -156,20 +156,25 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public ResponseGetBoardByKeywordWrapper searchBoards(String keyword, int page, int size) {
+    public ResponseGetBoardByKeywordWrapper searchBoards(String keyword, String category, int page,
+        int size) {
         if (page < 1 || size < 1) {
             throw new InvalidBoardRequestError("page>=1, size>=1 이어야 합니다.");
         }
-        Pageable pageable = PageRequest.of(page - 1, size);
 
-        Page<Board> boards = boardRepository.findByTitleContainingOrderByCreatedAtDesc(keyword,
-            pageable);
+        Pageable pageable = PageRequest.of(page - 1, size,
+            Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        List<ResponseGetBoardByKeyword> dtoList = boards.getContent().stream().map(board -> {
-            ResponseGetBoardByKeyword response = modelMapper.map(board,
-                ResponseGetBoardByKeyword.class);
-            return response;
-        }).collect(Collectors.toList());
+        Page<Board> boards = boardRepository.findByCategoryNameAndTitleContainingIgnoreCase(
+            category.trim(),
+            keyword.trim(),
+            pageable
+        );
+
+        List<ResponseGetBoardByKeyword> dtoList = boards.getContent().stream()
+            .map(b -> modelMapper.map(b, ResponseGetBoardByKeyword.class))
+            .collect(Collectors.toList());
+
         return ResponseGetBoardByKeywordWrapper.builder()
             .content(dtoList)
             .pageNumber(boards.getNumber())
@@ -303,7 +308,7 @@ public class BoardServiceImpl implements BoardService {
             throw new InvalidBoardRequestError("page>=1, size>=1 이어야 합니다.");
         }
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
-        Page<Board> boardPage = boardRepository.findByCategoryNameOrderByCreatedAtDesc(category,
+        Page<Board> boardPage = boardRepository.findByCategoryName(category,
             pageable);
 
         List<ResponseGetBoardByCategory> dtoList = boardPage.getContent().stream()

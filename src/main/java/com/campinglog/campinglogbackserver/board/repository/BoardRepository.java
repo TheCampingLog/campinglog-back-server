@@ -22,14 +22,20 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     Page<Board> findByMemberEmail(String email, Pageable pageable);
 
     @EntityGraph(attributePaths = "member")
-    List<Board> findByCreatedAtAfterOrderByLikeCountDescViewCountDescCreatedAtDesc(
-        LocalDateTime from, Pageable pageable);
+    Page<Board> findByCreatedAtAfter(LocalDateTime from, Pageable pageable);
+
 
     @EntityGraph(attributePaths = "member")
-    Page<Board> findByTitleContainingOrderByCreatedAtDesc(String title, Pageable pageable);
+    Page<Board> findByTitleContainingIgnoreCase(String title, Pageable pageable);
+
 
     @EntityGraph(attributePaths = "member")
-    Page<Board> findByCategoryNameOrderByCreatedAtDesc(String categoryName, Pageable pageable);
+    Page<Board> findByCategoryName(String categoryName, Pageable pageable);
+
+
+    @EntityGraph(attributePaths = "member")
+    Page<Board> findByCategoryNameAndTitleContainingIgnoreCase(
+        String categoryName, String title, Pageable pageable);
 
     // 회원별 좋아요 합계 (글 없는 회원도 포함하려면 LEFT JOIN으로 Member 시작)
     @Query("""
