@@ -5,18 +5,14 @@ import com.campinglog.campinglogbackserver.board.dto.request.RequestAddComment;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestAddLike;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetBoard;
 import com.campinglog.campinglogbackserver.board.dto.request.RequestSetComment;
-import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategory;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByCategoryWrapper;
-import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeyword;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardByKeywordWrapper;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardDetail;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetBoardRank;
-import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetComments;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetCommentsWrapper;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseGetLike;
 import com.campinglog.campinglogbackserver.board.dto.response.ResponseToggleLike;
 import com.campinglog.campinglogbackserver.board.entity.Board;
-import com.campinglog.campinglogbackserver.board.entity.BoardLike;
 import com.campinglog.campinglogbackserver.board.entity.Comment;
 import java.util.List;
 
@@ -32,7 +28,8 @@ public interface BoardService {
 
     ResponseGetBoardDetail getBoardDetail(String boardId, String email);
 
-    ResponseGetBoardByKeywordWrapper searchBoards(String keyword, int page, int size);
+    ResponseGetBoardByKeywordWrapper searchBoards(String keyword, String category, int page,
+        int size);
 
     Comment addComment(String boardId, RequestAddComment requestAddComment);
 

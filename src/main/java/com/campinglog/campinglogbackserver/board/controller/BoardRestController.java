@@ -91,9 +91,11 @@ public class BoardRestController {
 
     @GetMapping("/search")
     public ResponseEntity<ResponseGetBoardByKeywordWrapper> searchBoards(
-        @RequestParam String keyword, @RequestParam(required = false, defaultValue = "1") int page,
+        @RequestParam String keyword, @RequestParam(required = false) String category,
+        @RequestParam(required = false, defaultValue = "1") int page,
         @RequestParam(required = false, defaultValue = "3") int size) {
-        ResponseGetBoardByKeywordWrapper result = boardService.searchBoards(keyword, page, size);
+        ResponseGetBoardByKeywordWrapper result = boardService.searchBoards(keyword, category, page,
+            size);
         return ResponseEntity.ok(result);
     }
 

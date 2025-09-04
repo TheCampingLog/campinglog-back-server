@@ -196,7 +196,7 @@ public class BoardServiceImplTests {
 
     @Test
     void searchBoards_byKeyword_latest() {
-        ResponseGetBoardByKeywordWrapper res = boardService.searchBoards("장비", 1, 10);
+        ResponseGetBoardByKeywordWrapper res = boardService.searchBoards("장비", "캠핑장", 1, 10);
         assertThat(res.getContent()).extracting(ResponseGetBoardByKeyword::getBoardId)
             .containsExactly(boardBId);
     }

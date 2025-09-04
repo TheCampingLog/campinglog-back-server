@@ -109,11 +109,12 @@ public class BoardRepositoryTests {
         LocalDateTime from = LocalDateTime.now().minusDays(1);
 
         // when
-        List<Board> list = boardRepository
-            .findByCreatedAtAfterOrderByLikeCountDescViewCountDescCreatedAtDesc(
+        Page<Board> page = boardRepository
+            .findByCreatedAtAfter(
                 from, PageRequest.of(0, 10));
 
         // then
+        List<Board> list = page.getContent();
         assertThat(list).hasSize(2);
         assertThat(list).isSortedAccordingTo(
             Comparator.comparing(Board::getLikeCount).reversed()
@@ -128,8 +129,8 @@ public class BoardRepositoryTests {
         LocalDateTime from = LocalDateTime.now().plusDays(1);
 
         // when
-        List<Board> list = boardRepository
-            .findByCreatedAtAfterOrderByLikeCountDescViewCountDescCreatedAtDesc(
+        Page<Board> list = boardRepository
+            .findByCreatedAtAfter(
                 from, PageRequest.of(0, 10));
 
         // then
@@ -140,11 +141,12 @@ public class BoardRepositoryTests {
     void findByTitleContaining_success() {
         // when
         Page<Board> list = boardRepository
-            .findByTitleContainingOrderByCreatedAtDesc("테스트", PageRequest.of(0, 10));
+            .findByTitleContainingIgnoreCase("테스트", PageRequest.of(0, 10));
 
         // then
         assertThat(list).hasSize(2);
-        assertThat(list.getContent().get(0).getCreatedAt()).isAfter(list.getContent().get(1).getCreatedAt());
+        assertThat(list.getContent().get(0).getCreatedAt()).isAfter(
+            list.getContent().get(1).getCreatedAt());
     }
 
     @Test
@@ -154,7 +156,7 @@ public class BoardRepositoryTests {
 
         // when
         Page<Board> list = boardRepository
-            .findByTitleContainingOrderByCreatedAtDesc(keyword, PageRequest.of(0, 10));
+            .findByTitleContainingIgnoreCase(keyword, PageRequest.of(0, 10));
 
         // then
         assertThat(list).isEmpty();
@@ -164,7 +166,7 @@ public class BoardRepositoryTests {
     void findByCategoryName_success() {
         // when
         Page<Board> list = boardRepository
-            .findByCategoryNameOrderByCreatedAtDesc("후기", PageRequest.of(0, 10));
+            .findByCategoryName("후기", PageRequest.of(0, 10));
 
         // then
 
@@ -182,7 +184,7 @@ public class BoardRepositoryTests {
 
         // when
         Page<Board> list = boardRepository
-            .findByCategoryNameOrderByCreatedAtDesc(category, PageRequest.of(0, 10));
+            .findByCategoryName(category, PageRequest.of(0, 10));
 
         // then
         assertThat(list).isEmpty();
