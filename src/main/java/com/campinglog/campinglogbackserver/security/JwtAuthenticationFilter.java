@@ -1,6 +1,8 @@
 package com.campinglog.campinglogbackserver.security;
 
 import com.campinglog.campinglogbackserver.member.dto.request.RequestLogin;
+import com.campinglog.campinglogbackserver.member.entity.Member;
+import com.campinglog.campinglogbackserver.member.service.RefreshTokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,6 +25,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
   private final AuthenticationManager authenticationManager;
   private final JwtTokenProvider jwtTokenProvider;
   private final JwtProperties jwtProperties;
+  private final RefreshProperties refreshProperties;
+  private final RefreshTokenProvider refreshTokenProvider;
+  private final RefreshTokenService refreshTokenService;
 
   @Override
   public Authentication attemptAuthentication(HttpServletRequest request,
@@ -49,12 +54,16 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
   protected void successfulAuthentication(HttpServletRequest request,
       HttpServletResponse response,
       FilterChain chain, Authentication authResult) throws IOException, ServletException {
-    log.info("로그인 성공");
-    CustomUserDetails details = (CustomUserDetails) authResult.getPrincipal();
-    String jwtToken = jwtTokenProvider.generateToken(
-        ((CustomUserDetails) authResult.getPrincipal()).getUser());
+    Member member = ((CustomUserDetails) authResult.getPrincipal()).getUser();
+
+    String jwtToken = jwtTokenProvider.generateToken(member);
+    String refreshToken = refreshTokenProvider.generateToken();
+
+    refreshTokenService.saveRefreshToken(refreshToken, member);
+    addRefreshTokenCookie(response, refreshToken);
 
     response.addHeader(jwtProperties.getHeaderString(), jwtProperties.getTokenPrefix() + jwtToken);
+
     response.getWriter().println(Map.of("message", "login_success"));
   }
 
@@ -64,5 +73,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
       AuthenticationException failed) throws IOException, ServletException {
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     response.getWriter().println(Map.of("message", "login_fail"));
+  }
+
+  private void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
+    response.setHeader("Set-Cookie",
+        String.format("%s=%s; Max-Age=%d; Path=%s; HttpOnly; SameSite=%s",
+            refreshProperties.getCookie(),
+            refreshToken, refreshProperties.getExpiration(), "/", "Strict"));
   }
 }

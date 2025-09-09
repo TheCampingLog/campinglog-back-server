@@ -1,6 +1,7 @@
 package com.campinglog.campinglogbackserver.config;
 
 import com.campinglog.campinglogbackserver.member.repository.MemberRepository;
+import com.campinglog.campinglogbackserver.member.service.RefreshTokenService;
 import com.campinglog.campinglogbackserver.security.CustomOauth2UserService;
 import com.campinglog.campinglogbackserver.security.CustomUserDetailsService;
 import com.campinglog.campinglogbackserver.security.JwtAuthenticationFilter;
@@ -9,6 +10,8 @@ import com.campinglog.campinglogbackserver.security.JwtProperties;
 import com.campinglog.campinglogbackserver.security.JwtTokenProvider;
 import com.campinglog.campinglogbackserver.security.OAuth2FailureHandler;
 import com.campinglog.campinglogbackserver.security.OAuth2SuccessHandler;
+import com.campinglog.campinglogbackserver.security.RefreshProperties;
+import com.campinglog.campinglogbackserver.security.RefreshTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +31,7 @@ import org.springframework.web.filter.CorsFilter;
 public class SecurityConfig {
 
   private final JwtProperties jwtProperties;
+  private final RefreshProperties refreshProperties;
 
   @Bean
   public AuthenticationManager authenticationManager(
@@ -40,15 +44,14 @@ public class SecurityConfig {
       AuthenticationManager authenticationManager, MemberRepository memberRepository,
       CorsFilter corsFilter, CustomUserDetailsService customUserDetailsService,
       JwtTokenProvider jwtTokenProvider, CustomOauth2UserService customOauth2UserService,
-      OAuth2SuccessHandler oAuth2SuccessHandler, OAuth2FailureHandler oAuth2FailureHandler
+      OAuth2SuccessHandler oAuth2SuccessHandler, OAuth2FailureHandler oAuth2FailureHandler,
+      RefreshTokenProvider refreshTokenProvider, RefreshTokenService refreshTokenService
   )
       throws Exception {
 
     http.csrf(csrf -> csrf.disable())
         .sessionManagement(
-            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .maximumSessions(1)
-                .maxSessionsPreventsLogin(false))
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .formLogin(form -> form.disable())
         .httpBasic(httpBasic -> httpBasic.disable());
     http.headers(headers -> headers
@@ -61,10 +64,12 @@ public class SecurityConfig {
         .successHandler(oAuth2SuccessHandler)
     );
     http.addFilter(
-        new JwtAuthenticationFilter(authenticationManager, jwtTokenProvider, jwtProperties));
+        new JwtAuthenticationFilter(authenticationManager, jwtTokenProvider, jwtProperties,
+            refreshProperties, refreshTokenProvider, refreshTokenService));
     http.addFilter(new JwtBasicAuthenticationFilter(authenticationManager, jwtProperties));
     http.authorizeHttpRequests(auth ->
-        auth.requestMatchers("/h2-console/**", "/api/members", "/login", "/favicon.ico").permitAll()
+        auth.requestMatchers("/h2-console/**", "/api/members", "/login", "/favicon.ico",
+                "/api/members/refresh").permitAll()
             .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/members/**-availability/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/boards/rank").permitAll()

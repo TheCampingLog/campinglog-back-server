@@ -30,10 +30,14 @@ public class JwtBasicAuthenticationFilter extends BasicAuthenticationFilter {
   }
 
   @Override
-  protected boolean shouldNotFilterAsyncDispatch() { return false; }
+  protected boolean shouldNotFilterAsyncDispatch() {
+    return false;
+  }
 
   @Override
-  protected boolean shouldNotFilterErrorDispatch() { return false; }
+  protected boolean shouldNotFilterErrorDispatch() {
+    return false;
+  }
 
   @Override
   public void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
