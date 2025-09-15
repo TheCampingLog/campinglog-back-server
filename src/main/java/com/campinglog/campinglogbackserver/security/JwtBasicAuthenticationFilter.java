@@ -1,6 +1,7 @@
 package com.campinglog.campinglogbackserver.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
@@ -78,9 +79,19 @@ public class JwtBasicAuthenticationFilter extends BasicAuthenticationFilter {
         SecurityContextHolder.getContext().setAuthentication(authentication);
       }
 
+    } catch (ExpiredJwtException eje) {
+      // 토큰 만료시 401 응답 및 필터 체인 종료
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      response.setContentType("application/json");
+      response.getWriter().write("{\"error\": \"Token expired\"}");
+      return;
     } catch (Exception e) {
-      // JWT 파싱 실패 시 로그 기록 후 다음 필터로 진행
       logger.error("JWT token validation failed: " + e.getMessage());
+      // 토큰 오류시 401 처리 (필요 시)
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      response.setContentType("application/json");
+      response.getWriter().write("{\"error\": \"Invalid token\"}");
+      return;
     }
 
     chain.doFilter(request, response);

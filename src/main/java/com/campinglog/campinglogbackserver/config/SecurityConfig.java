@@ -49,7 +49,8 @@ public class SecurityConfig {
   )
       throws Exception {
 
-    http.csrf(csrf -> csrf.disable())
+    http.addFilter(corsFilter)
+        .csrf(csrf -> csrf.disable())
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .formLogin(form -> form.disable())
@@ -57,7 +58,6 @@ public class SecurityConfig {
     http.headers(headers -> headers
         .frameOptions(frame -> frame.disable())); // H2 콘솔용 설정
     // 필터 순서 (매우 중요!)
-    http.addFilter(corsFilter);
     http.oauth2Login(oauth2 -> oauth2
         .userInfoEndpoint(userInfo -> userInfo
             .userService(customOauth2UserService))
@@ -71,6 +71,7 @@ public class SecurityConfig {
         auth.requestMatchers("/h2-console/**", "/api/members", "/login", "/favicon.ico",
                 "/api/members/refresh").permitAll()
             .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/members/**-availability/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/boards/rank").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/boards/search").permitAll()
