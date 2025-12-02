@@ -32,7 +32,7 @@
 ![Confluence](https://img.shields.io/badge/Confluence-172B4D?style=flat-square&logo=confluence&logoColor=white)
 ![Google Sheets](https://img.shields.io/badge/Google_Sheets-34A853?style=flat-square&logo=googlesheets&logoColor=white)
 ![draw.io](https://img.shields.io/badge/draw.io-F08705?style=flat-square)
-![slack](https://img.shields.io/badge/Slack-FFFFFF?style=flat-square)
+![slack](https://img.shields.io/badge/Slack-69D3A7?style=flat-square)
 ![Figma](https://img.shields.io/badge/Figma-F24E1E?style=flat-square&logo=figma&logoColor=white)
 ![Git](https://img.shields.io/badge/Git-F05032?style=flat-square&logo=git&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white)
