@@ -24,9 +24,10 @@
 ![IntelliJ](https://img.shields.io/badge/IDEA-000000?style=flat-square&logo=intellijidea)![버전](https://img.shields.io/badge/2025.1.1.1-555555?style=flat-square)
 ![Maven](https://img.shields.io/badge/Maven-C71A36?style=flat-square&logo=apachemaven)![버전](https://img.shields.io/badge/3.9.6-555555?style=flat-square)
 ![MariaDB](https://img.shields.io/badge/MariaDB-003545?style=flat-square&logo=mariadb)![버전](https://img.shields.io/badge/10.6.22-555555?style=flat-square)
+![h2](https://img.shields.io/badge/H2_database-09476B?style=flat-square&logo=H2-database&logoColor=white)
 ![JUnit5](https://img.shields.io/badge/JUnit5-25A162?style=flat-square&logo=junit5&logoColor=white)
 ![Postman](https://img.shields.io/badge/Postman-FF6C37?style=flat-square&logo=postman&logoColor=white)
-![h2](https://img.shields.io/badge/H2_database-09476B?style=flat-square&logo=H2-database&logoColor=white)
+
 ### 🤝 협업 환경
 ![Jira](https://img.shields.io/badge/Jira-0052CC?style=flat-square&logo=jira&logoColor=white)
 ![Confluence](https://img.shields.io/badge/Confluence-172B4D?style=flat-square&logo=confluence&logoColor=white)
