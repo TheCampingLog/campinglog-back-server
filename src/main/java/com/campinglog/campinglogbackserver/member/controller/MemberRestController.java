@@ -1,7 +1,7 @@
 package com.campinglog.campinglogbackserver.member.controller;
 
 import com.campinglog.campinglogbackserver.campinfo.dto.response.ResponseGetMyReviewWrapper;
-import com.campinglog.campinglogbackserver.campinfo.service.CampInfoService;
+import com.campinglog.campinglogbackserver.campinfo.service.CampInfoServiceCF;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestAddMember;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestChangePassword;
 import com.campinglog.campinglogbackserver.member.dto.request.RequestSetProfileImage;
@@ -22,6 +22,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -35,7 +36,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Mono;
 
 @RestController
 @RequiredArgsConstructor
@@ -44,7 +44,7 @@ import reactor.core.publisher.Mono;
 public class MemberRestController {
 
   private final MemberService memberService;
-  private final CampInfoService campInfoService;
+  private final CampInfoServiceCF campInfoServiceCF;
   private final RefreshTokenService refreshTokenService;
   private final RefreshProperties refreshProperties;
   private final JwtProperties jwtProperties;
@@ -117,11 +117,11 @@ public class MemberRestController {
   }
 
   @GetMapping("/mypage/reviews")
-  public ResponseEntity<Mono<ResponseGetMyReviewWrapper>> getReviews(
+  public CompletableFuture<ResponseEntity<ResponseGetMyReviewWrapper>> getReviews(
       @AuthenticationPrincipal String email,
       @RequestParam(name = "pageNo", defaultValue = "1") int pageNo,
       @RequestParam(name = "size", defaultValue = "4") int size) {
-    return ResponseEntity.ok(campInfoService.getMyReviews(email, pageNo, size));
+    return campInfoServiceCF.getMyReviews(email, pageNo, size).thenApply(ResponseEntity::ok);
   }
 
   @GetMapping("/mypage/profile-image")

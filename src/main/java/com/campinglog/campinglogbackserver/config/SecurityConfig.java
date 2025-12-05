@@ -69,7 +69,7 @@ public class SecurityConfig {
     http.addFilter(new JwtBasicAuthenticationFilter(authenticationManager, jwtProperties));
     http.authorizeHttpRequests(auth ->
         auth.requestMatchers("/h2-console/**", "/api/members", "/login", "/favicon.ico",
-                "/api/members/refresh").permitAll()
+                "/api/members/refresh","/v3/api-docs", "/swagger-ui/**", "/swagger-ui.html","/api/v1/docs/swagger*/**","/v3/api-docs/**").permitAll()
             .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/members/**-availability/**").permitAll()
